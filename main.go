@@ -31,16 +31,47 @@ func main(){
 	textView := tview.NewTextView()
 	textView.SetBackgroundColor(tcell.ColorDefault)
 	textView.SetText(text)
+	lowerTextView := tview.NewTextView()
+	screen := tview.NewFlex().SetDirection(tview.FlexRow).AddItem(textView, 0,1,true).AddItem(lowerTextView,1,0,false)
 	
 	selectionMode := false
 
 	textView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-			switch event.Rune() {
-			case ' ':
-				selectionMode = !selectionMode
+
+		switch event.Rune() {
+		case ' ':
+			selectionMode = !selectionMode
+			go func() {
+				app.QueueUpdateDraw(func() {
+					if selectionMode {
+						lowerTextView.SetText("Select Link To Follow: ")
+					} else{
+						lowerTextView.SetText("")
+					}
+				})
+
+			}()
+
+					return nil
 			case '1', '2','3','4','5','6','7','8','9','0':
+			if selectionMode {
+				go func() {
+					app.QueueUpdateDraw(func() {
+						currentText := lowerTextView.GetText(false)
+						currentText = currentText + string(event.Rune())
+						lowerTextView.SetText(currentText)
+					})
+
+				}()
+			}
+
+		}
+
+		switch event.Key() {
+			case tcell.KeyEnter:
 				if selectionMode {
 					selectionMode = false
+					go func() {
 						client := &gemini.Client{ConnectTimeout: 5 * time.Second}
 						resp, err := client.Fetch("gemini://blog.laack.co")
 
@@ -60,18 +91,18 @@ func main(){
 						app.QueueUpdateDraw(func() {
 							textView.SetText(textNew)
 						})
+					}()
 
 					return nil
 				}
 			}
 
-			return event
-		})
+		return event
+	})
 
 
 
-
-	if err := app.SetRoot(textView, true).SetFocus(textView).Run(); err != nil {
+	if err := app.SetRoot(screen, true).SetFocus(textView).Run(); err != nil {
 		panic(err)
 	}
 
