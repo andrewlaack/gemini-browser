@@ -41,7 +41,6 @@ func main(){
 			case '1', '2','3','4','5','6','7','8','9','0':
 				if selectionMode {
 					selectionMode = false
-					go func() {
 						client := &gemini.Client{ConnectTimeout: 5 * time.Second}
 						resp, err := client.Fetch("gemini://blog.laack.co")
 
@@ -61,7 +60,6 @@ func main(){
 						app.QueueUpdateDraw(func() {
 							textView.SetText(textNew)
 						})
-					}()
 
 					return nil
 				}
