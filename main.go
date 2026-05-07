@@ -2,7 +2,9 @@ package main
 
 import (
 	"io"
+	"fmt"
 	"os"
+	"strconv"
 	"time"
 	"github.com/gdamore/tcell/v2"
 	"github.com/makeworld-the-better-one/go-gemini"
@@ -12,7 +14,8 @@ import (
 func main(){
 
 	client := &gemini.Client{ConnectTimeout: 5 * time.Second}
-	resp, err := client.Fetch(os.Args[1])
+	currentUrl := os.Args[1]
+	resp, err := client.Fetch(currentUrl)
 
 	if err != nil {
 		panic(err)
@@ -24,8 +27,6 @@ func main(){
 
 	text := string(bodyBytes)
 
-	// links := ParseLinks(text, os.Args[1])
-
 	app := tview.NewApplication()
 
 	textView := tview.NewTextView()
@@ -35,6 +36,7 @@ func main(){
 	screen := tview.NewFlex().SetDirection(tview.FlexRow).AddItem(textView, 0,1,true).AddItem(lowerTextView,1,0,false)
 	
 	selectionMode := false
+	currentUrlSelection := ""
 
 	textView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 
@@ -56,6 +58,9 @@ func main(){
 			case '1', '2','3','4','5','6','7','8','9','0':
 			if selectionMode {
 				go func() {
+
+					currentUrlSelection += string(event.Rune())
+
 					app.QueueUpdateDraw(func() {
 						currentText := lowerTextView.GetText(false)
 						currentText = currentText + string(event.Rune())
@@ -73,24 +78,44 @@ func main(){
 					selectionMode = false
 					go func() {
 						client := &gemini.Client{ConnectTimeout: 5 * time.Second}
-						resp, err := client.Fetch("gemini://blog.laack.co")
+
+						links := ParseLinks(text, currentUrl)
+
+						currentSelectionNum, err := strconv.Atoi(currentUrlSelection)
+						currentUrlSelection = ""
 
 						if err != nil {
 							panic(err)
 						}
 
-						bodyBytes, err := io.ReadAll(resp.Body)
-						if err != nil {
-							panic(err)
+						if len(links) > currentSelectionNum {
+							currentUrl = links[currentSelectionNum]
+							resp, err := client.Fetch(currentUrl)
+
+							if err != nil {
+								panic(err)
+							}
+
+							bodyBytes, err := io.ReadAll(resp.Body)
+							if err != nil {
+								panic(err)
+							}
+
+							resp.Body.Close()
+
+							text = string(bodyBytes)
+
+							app.QueueUpdateDraw(func() {
+								textView.SetText(text)
+								lowerTextView.SetText(currentUrl)
+							})
+						} else {
+							app.QueueUpdateDraw(func() {
+								lowerTextView.SetText(fmt.Sprintf("Links: %v", links))
+							})
+
 						}
 
-						resp.Body.Close()
-
-						textNew := string(bodyBytes)
-
-						app.QueueUpdateDraw(func() {
-							textView.SetText(textNew)
-						})
 					}()
 
 					return nil
