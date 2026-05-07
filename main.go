@@ -13,6 +13,12 @@ import (
 
 func main(){
 
+	// TODO: Forward and backwards between sites.
+	// I want a dynamic array for current site / next site
+	// backward changes index into array, going to a new site chops sites higher than current, replaces next with the next site to visit.
+
+	// TODO: Open websites in correct xdg-open things.
+
 	client := &gemini.Client{ConnectTimeout: 5 * time.Second}
 	currentUrl := os.Args[1]
 	resp, err := client.Fetch(currentUrl)
@@ -38,6 +44,8 @@ func main(){
 	selectionMode := false
 	currentUrlSelection := ""
 
+	// TODO: the management of state is quite annoying here, I should find a more consistent way to do this.
+
 	textView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 
 		switch event.Rune() {
@@ -57,6 +65,7 @@ func main(){
 					return nil
 			case '1', '2','3','4','5','6','7','8','9','0':
 			if selectionMode {
+				// TODO: Why does the update part have to be wrapped in a go-routine?
 				go func() {
 
 					currentUrlSelection += string(event.Rune())
