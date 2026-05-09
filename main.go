@@ -68,7 +68,9 @@ func stripLeadingWhiteSpace(text string) string {
 // seems like most clients prompt before redirects
 // I'd want prompts prior to redirects cross-origin
 
-func updateSite(newUrl string) (error){
+// TODO: Should reuse node pass in a node to remove side effect of global state?
+func updateSite(newUrl string, reuseNode bool) (error){
+
 	
 	client := &gemini.Client{}
 
@@ -88,14 +90,17 @@ func updateSite(newUrl string) (error){
 
 	body := string(bodyBytes)
 
-	newNode := &Node{url: newUrl}
 
-	if history != nil {
-		history.next = newNode
-		newNode.prior = history
-	} 
+	if !reuseNode {
+		newNode := &Node{url: newUrl}
+		if history != nil {
+			history.next = newNode
+			newNode.prior = history
+		} 
 
-	history = newNode
+		history = newNode
+	}
+
 
 
 	// TODO: Should be done once the site text is updated
@@ -254,7 +259,7 @@ func main(){
 	}
 
 	go func() {
-		err := updateSite(initSite)
+		err := updateSite(initSite, false)
 
 		if err != nil {
 			app.Stop()
@@ -275,7 +280,7 @@ func main(){
 					if err == nil {
 						if selection < len(links) {
 							// TODO: Handle this possible error 
-							updateSite(links[selection].address)
+							updateSite(links[selection].address, false)
 						}
 					}
 
@@ -293,6 +298,7 @@ func main(){
 			}
 
 			r := event.Rune()
+
 			if r == '0' || r == '1' || r == '2' || r == '3' || r == '4' || r == '5' || r == '6' || r == '7' || r == '8' || r == '9'{
 				if linkFollowMode {
 					linkSelectionText += string(r)
@@ -304,16 +310,22 @@ func main(){
 					history = history.prior
 					target := history.url
 
-					// pop again to jump forwards correctly again when calling update site
-					history = history.prior
-
 					// TODO: handle this possible error
-					updateSite(target)
+					updateSite(target, true)
 
 				}
 			}
-			// TODO: Add forwards link traversal. This is slightly more difficult to not mess
-			// up the history.
+
+			if r == 'f' {
+				if history != nil && history.next != nil && history.next.url != "" {
+					history = history.next
+					target := history.url
+					// TODO: handle this possible error
+					updateSite(target, true)
+
+				}
+
+			}
 
 			if event.Rune() ==  ' '{
 				linkFollowMode = true
