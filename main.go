@@ -9,6 +9,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/makeworld-the-better-one/go-gemini"
 	"github.com/rivo/tview"
+	"os"
 )
 
 type Node struct {
@@ -245,8 +246,15 @@ func main(){
 	mainArea.AddItem(entryText, 1, 0, false)
 	entryText.SetText("")
 
+
+	initSite := "gemini://tlgs.one/known-hosts"
+
+	if len(os.Args) > 1 {
+		initSite = os.Args[1]
+	}
+
 	go func() {
-		err := updateSite("gemini://tlgs.one/known-hosts")
+		err := updateSite(initSite)
 
 		if err != nil {
 			app.Stop()
