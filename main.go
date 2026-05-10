@@ -1,31 +1,31 @@
 package main
 
 import (
-	"io"
 	"fmt"
-	"net/url"
-	"strconv"
-	"strings"
 	"github.com/gdamore/tcell/v2"
 	"github.com/makeworld-the-better-one/go-gemini"
 	"github.com/rivo/tview"
+	"io"
+	"net/url"
 	"os"
+	"strconv"
+	"strings"
 )
 
 type Node struct {
-	next *Node
+	next  *Node
 	prior *Node
-	url string
+	url   string
 }
 
 type Site struct {
-	statusCode int
+	statusCode  int
 	siteContent string
-	url string
+	url         string
 }
 
 type Link struct {
-	address string
+	address   string
 	plaintext string
 }
 
@@ -35,15 +35,15 @@ var (
 
 	// TODO: There also seems to be some other form of state that messes with history traversal.
 
-	history *Node
+	history           *Node
 	linkSelectionText string
-	links []Link
-	site Site
-	linkFollowMode bool
-	mainArea *tview.Flex
-	mainText *tview.TextView
-	entryText *tview.TextView
-	app *tview.Application
+	links             []Link
+	site              Site
+	linkFollowMode    bool
+	mainArea          *tview.Flex
+	mainText          *tview.TextView
+	entryText         *tview.TextView
+	app               *tview.Application
 )
 
 func stripLeadingWhiteSpace(text string) string {
@@ -69,9 +69,8 @@ func stripLeadingWhiteSpace(text string) string {
 // I'd want prompts prior to redirects cross-origin
 
 // TODO: Should reuse node pass in a node to remove side effect of global state?
-func updateSite(newUrl string, reuseNode bool) (error){
+func updateSite(newUrl string, reuseNode bool) error {
 
-	
 	client := &gemini.Client{}
 
 	resp, err := client.Fetch(newUrl)
@@ -90,22 +89,18 @@ func updateSite(newUrl string, reuseNode bool) (error){
 
 	body := string(bodyBytes)
 
-
 	if !reuseNode {
 		newNode := &Node{url: newUrl}
 		if history != nil {
 			history.next = newNode
 			newNode.prior = history
-		} 
+		}
 
 		history = newNode
 	}
 
-
-
 	// TODO: Should be done once the site text is updated
 	site.url = newUrl
-
 
 	totalLinkCount := CountLinks(body)
 	lines := strings.Split(body, "\n")
@@ -115,7 +110,6 @@ func updateSite(newUrl string, reuseNode bool) (error){
 
 	result := ""
 	linkCount := 0
-
 
 	links = []Link{}
 
@@ -135,7 +129,6 @@ func updateSite(newUrl string, reuseNode bool) (error){
 			escaped = !escaped
 		}
 
-
 		if len(item) > 3 && !escaped {
 			if item[0] == '=' && item[1] == '>' {
 
@@ -146,7 +139,7 @@ func updateSite(newUrl string, reuseNode bool) (error){
 					return r == ' ' || r == '\t'
 				})
 
-				address := "" 
+				address := ""
 				text := ""
 
 				if len(parts) > 0 {
@@ -226,18 +219,18 @@ func initApplication() *tview.Application {
 }
 
 func repaint() {
-    app.QueueUpdateDraw(func() {
-        mainArea.SetTitle(site.url)
-        mainText.SetText(site.siteContent)
+	app.QueueUpdateDraw(func() {
+		mainArea.SetTitle(site.url)
+		mainText.SetText(site.siteContent)
 		if linkFollowMode {
-			entryText.SetText("Link to follow: "+linkSelectionText)
+			entryText.SetText("Link to follow: " + linkSelectionText)
 		} else {
 			entryText.SetText("")
 		}
-    })
+	})
 }
 
-func main(){
+func main() {
 
 	app = initApplication()
 	mainText = tview.NewTextView()
@@ -247,10 +240,9 @@ func main(){
 	mainArea = tview.NewFlex().SetDirection(tview.FlexRow)
 	mainArea.SetBorder(true)
 
-	mainArea.AddItem(mainText, 0, 1, true) 
+	mainArea.AddItem(mainText, 0, 1, true)
 	mainArea.AddItem(entryText, 1, 0, false)
 	entryText.SetText("")
-
 
 	initSite := "gemini://tlgs.one/known-hosts"
 
@@ -265,10 +257,9 @@ func main(){
 			app.Stop()
 			panic(err)
 		}
-
 		repaint()
 	}()
-	
+
 	mainArea.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		go func() {
 
@@ -279,7 +270,7 @@ func main(){
 
 					if err == nil {
 						if selection < len(links) {
-							// TODO: Handle this possible error 
+							// TODO: Handle this possible error
 							updateSite(links[selection].address, false)
 						}
 					}
@@ -294,12 +285,12 @@ func main(){
 					linkFollowMode = false
 					linkSelectionText = ""
 
-				} 
+				}
 			}
 
 			r := event.Rune()
 
-			if r == '0' || r == '1' || r == '2' || r == '3' || r == '4' || r == '5' || r == '6' || r == '7' || r == '8' || r == '9'{
+			if r == '0' || r == '1' || r == '2' || r == '3' || r == '4' || r == '5' || r == '6' || r == '7' || r == '8' || r == '9' {
 				if linkFollowMode {
 					linkSelectionText += string(r)
 				}
@@ -309,10 +300,8 @@ func main(){
 				if history != nil && history.prior != nil && history.prior.url != "" {
 					history = history.prior
 					target := history.url
-
 					// TODO: handle this possible error
 					updateSite(target, true)
-
 				}
 			}
 
@@ -322,12 +311,10 @@ func main(){
 					target := history.url
 					// TODO: handle this possible error
 					updateSite(target, true)
-
 				}
-
 			}
 
-			if event.Rune() ==  ' '{
+			if event.Rune() == ' ' {
 				linkFollowMode = true
 			}
 
