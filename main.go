@@ -33,7 +33,7 @@ var (
 	// TODO: Possibly replace this with a cache; it will be annoying to persist the page position
 	// but it's nice to have that when traversing links
 
-	// TODO: There also seems to be some other form of state that messes with history traversal.
+	// TODO: There also seems to be some other form of state that messes with history traversal. 
 
 	history           *Node
 	linkSelectionText string
@@ -190,6 +190,8 @@ func updateSite(newUrl string, reuseNode bool) error {
 	}
 
 	site.siteContent = result
+	// TODO: Is there a way to persist this across history for niceness e.g. seek line you were on before?
+	mainText.ScrollToBeginning()
 	site.statusCode = resp.Status
 	return nil
 }
@@ -328,6 +330,7 @@ func main() {
 	})
 
 	app.SetRoot(mainArea, true).SetFocus(mainArea)
+
 	err := app.Run()
 
 	if err != nil {
