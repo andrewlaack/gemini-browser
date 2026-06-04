@@ -102,9 +102,6 @@ func updateSite(newUrl string, reuseNode bool) error {
 	// So maybe we should special case both of them to support this and make sure other status codes,
 	// once we have full coverage are errored?
 
-	// TODO: more importantly, we should prompt the user based on the status line that contains
-	// instructions for what is being requested by the site. 
-
 	// TODO: When giving an invalid link to tlgs.one to add to the index it seems to redirect
 	// to another input site which doesn't seem to work correctly. 
 
@@ -357,9 +354,16 @@ func main() {
 						// url parse
 						urlEncoded, _ := url.Parse(text)
 						text = urlEncoded.String()
-						updateSite(site.url + "?" + text, false)
+
+
+						// TODO: This is really janky.
+						// like the remove / add stuff is awful. Should manage state better.
 						inputBoxRendered = false
 						showInputBox = false
+
+						repaint()
+
+						updateSite(site.url + "?" + text, false)
 						userInputBox.SetText("")
 					}
 				}
