@@ -36,10 +36,15 @@ var (
 	// TODO: There also seems to be some other form of state that messes with history traversal. 
 
 	history           *Node
+	// TODO: Refactor to only store state in the container
 	linkSelectionText string
 	links             []Link
 	site              Site
 	linkFollowMode    bool
+	linkFollowRendered bool
+	showInputBox      bool
+	inputBoxRendered  bool
+	userInputBox      *tview.InputField
 	mainArea          *tview.Flex
 	mainText          *tview.TextView
 	entryText         *tview.TextView
@@ -85,6 +90,18 @@ func updateSite(newUrl string, reuseNode bool) error {
 
 	if err != nil {
 		return err
+	}
+
+	site.statusCode = resp.Status
+
+	// if statuscode // 10 == 1; show popup for user interaction per 1x status code specification
+
+	if site.statusCode >= 10 && site.statusCode < 20 {
+		showInputBox = true
+		site.url = newUrl
+		return nil
+	} else {
+		showInputBox = false
 	}
 
 	body := string(bodyBytes)
@@ -192,7 +209,6 @@ func updateSite(newUrl string, reuseNode bool) error {
 	site.siteContent = result
 	// TODO: Is there a way to persist this across history for niceness e.g. seek line you were on before?
 	mainText.ScrollToBeginning()
-	site.statusCode = resp.Status
 	return nil
 }
 
@@ -224,11 +240,35 @@ func repaint() {
 	app.QueueUpdateDraw(func() {
 		mainArea.SetTitle(site.url)
 		mainText.SetText(site.siteContent)
+		
 		if linkFollowMode {
+			// TODO: Refactor to only store state in the container.
 			entryText.SetText("Link to follow: " + linkSelectionText)
+			if linkFollowRendered == false {
+				mainArea.AddItem(entryText, 1, 0, false)
+				linkFollowRendered = true
+			}
 		} else {
+			mainArea.RemoveItem(entryText)
+			linkFollowRendered = false
+
 			entryText.SetText("")
 		}
+
+		if showInputBox {
+
+			if inputBoxRendered == false {
+				mainArea.AddItem(userInputBox, 1, 0, false)
+				inputBoxRendered = true
+			}
+			app.SetFocus(userInputBox)
+
+		} else {
+			inputBoxRendered = false
+			mainArea.RemoveItem(userInputBox)
+			app.SetRoot(mainArea, true).SetFocus(mainArea)
+		}
+
 	})
 }
 
@@ -237,13 +277,21 @@ func main() {
 	app = initApplication()
 	mainText = tview.NewTextView()
 	mainText.SetBackgroundColor(tcell.ColorDefault)
+
+	// TODO: This should be an input field probably
 	entryText = tview.NewTextView()
 
 	mainArea = tview.NewFlex().SetDirection(tview.FlexRow)
 	mainArea.SetBorder(true)
 
+	userInputBox = tview.NewInputField()
+	// this is to be consistent with the otherbackground thing. 
+	// TODO: Should this be a constant color definition?
+	userInputBox.SetFieldBackgroundColor(tview.Styles.PrimitiveBackgroundColor)
+
 	mainArea.AddItem(mainText, 0, 1, true)
-	mainArea.AddItem(entryText, 1, 0, false)
+
+
 	entryText.SetText("")
 
 	initSite := "gemini://tlgs.one/known-hosts"
@@ -265,9 +313,12 @@ func main() {
 	mainArea.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		go func() {
 
+			// TODO: There is a really annoying bug where some stuff is slow to load
+			// and this will cause elements on screen to hide but not be obvious stuff is loading
+			// this messes with state expectations wherein multiple pages can be loaded from the same base. 
+			// presumably this could cause some weird races...
 			if event.Key() == tcell.KeyEnter {
 				if linkFollowMode {
-
 					selection, err := strconv.Atoi(linkSelectionText)
 
 					if err == nil {
@@ -280,19 +331,50 @@ func main() {
 					linkFollowMode = false
 					linkSelectionText = ""
 				}
+
+				if showInputBox {
+					text := userInputBox.GetText()
+					if strings.Compare(text, "") != 0 {
+						// url parse
+						urlEncoded, _ := url.Parse(text)
+						text = urlEncoded.String()
+						updateSite(site.url + "?" + text, false)
+						inputBoxRendered = false
+						showInputBox = false
+						userInputBox.SetText("")
+					}
+				}
+
+			}
+
+			if event.Key() == tcell.KeyBackspace || event.Key() == tcell.KeyBackspace2 {
+				if linkFollowMode {
+					if len(linkSelectionText) > 0 {
+						linkSelectionText = linkSelectionText[:len(linkSelectionText)-1]
+					}
+				}
 			}
 
 			if event.Key() == tcell.KeyEsc {
 				if linkFollowMode {
 					linkFollowMode = false
 					linkSelectionText = ""
-
 				}
+				if showInputBox {
+					showInputBox = false
+					inputBoxRendered = false
+					// Text tracks the state of the element.
+					userInputBox.SetText("")
+				}
+			
 			}
 
 			r := event.Rune()
 
-			if r == '0' || r == '1' || r == '2' || r == '3' || r == '4' || r == '5' || r == '6' || r == '7' || r == '8' || r == '9' {
+			// TODO: Refactor this. This is shit. Use the component to store the state with 
+			// gettext and settext.
+
+			if r == '0' || r == '1' || r == '2' || r == '3' || r == '4' || r == '5' || r == '6' || r == '7' || r == '8' || r == '9'{
 				if linkFollowMode {
 					linkSelectionText += string(r)
 				}
@@ -316,7 +398,7 @@ func main() {
 				}
 			}
 
-			if event.Rune() == ' ' {
+			if event.Rune() == ' ' && !showInputBox {
 				linkFollowMode = true
 			}
 
