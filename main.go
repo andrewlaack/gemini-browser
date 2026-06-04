@@ -95,6 +95,11 @@ func updateSite(newUrl string, reuseNode bool) error {
 	site.statusCode = resp.Status
 
 	// if statuscode // 10 == 1; show popup for user interaction per 1x status code specification
+	// TODO: Make this better. Technically, the spec states that status code 10 is for 
+	// inputs and 11 **should** behave like a password field with input masked (emphasis on should)
+	// so per rfc specifications I don't have to.
+	// So maybe we should special case both of them to support this and make sure other status codes,
+	// once we have full coverage are errored?
 
 	if site.statusCode >= 10 && site.statusCode < 20 {
 		showInputBox = true
