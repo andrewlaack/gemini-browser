@@ -45,6 +45,7 @@ var (
 	showInputBox      bool
 	inputBoxRendered  bool
 	userInputBox      *tview.InputField
+	userInputPrefix	  string
 	mainArea          *tview.Flex
 	mainText          *tview.TextView
 	entryText         *tview.TextView
@@ -101,9 +102,16 @@ func updateSite(newUrl string, reuseNode bool) error {
 	// So maybe we should special case both of them to support this and make sure other status codes,
 	// once we have full coverage are errored?
 
+	// TODO: more importantly, we should prompt the user based on the status line that contains
+	// instructions for what is being requested by the site. 
+
+	// TODO: When giving an invalid link to tlgs.one to add to the index it seems to redirect
+	// to another input site which doesn't seem to work correctly. 
+
 	if site.statusCode >= 10 && site.statusCode < 20 {
 		showInputBox = true
 		site.url = newUrl
+		userInputPrefix = resp.Meta + ": "
 		return nil
 	} else {
 		showInputBox = false
@@ -268,6 +276,11 @@ func repaint() {
 			}
 			app.SetFocus(userInputBox)
 
+			// TODO: This is janky. Would it be possible to just have another on screen element?
+			if !strings.HasPrefix(userInputBox.GetText(), userInputPrefix) {
+				userInputBox.SetText(userInputPrefix)
+			}
+
 		} else {
 			inputBoxRendered = false
 			mainArea.RemoveItem(userInputBox)
@@ -339,6 +352,7 @@ func main() {
 
 				if showInputBox {
 					text := userInputBox.GetText()
+					text = strings.TrimPrefix(text, userInputPrefix)
 					if strings.Compare(text, "") != 0 {
 						// url parse
 						urlEncoded, _ := url.Parse(text)
