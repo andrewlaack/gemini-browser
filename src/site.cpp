@@ -7,6 +7,10 @@ Site::Site(std::string header, std::string body) {
     this->header = header;
 }
 
+std::string Site::getHeader() {
+    return header;
+}
+
 std::string Site::getBody() {
     return body;
 }

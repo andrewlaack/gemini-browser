@@ -5,7 +5,7 @@
 #include "../include/gemini-client.hpp"
 #include "../include/link.hpp"
 
-TEST_CASE( "Link constructors" ) {
+TEST_CASE("Link constructors") {
 
     auto l2  = Link{"=> basic_2.gmi Other Page!", uri{"file://tests/sites/basic.gmi"}};
 
@@ -61,6 +61,16 @@ TEST_CASE("Match status code on missing .gmi files") {
     auto ln = Link{"=> tests/sites/this_file_doesnt_exist.gmi"};
     Site* s = client.fetchSite(ln);
     REQUIRE(s->getStatusCode() == 51);
+    delete s;
+}
+
+
+TEST_CASE("Send basic gemini requests") {
+    auto client = GeminiClient {};
+    auto ln = Link{"=> gemini://laack.co"};
+    Site* s = client.fetchSite(ln);
+    REQUIRE(s->getStatusCode() == 20);
+    REQUIRE(s->getHeader() == "20 text/gemini;lang=en-US\r\n");
     delete s;
 }
 

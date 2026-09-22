@@ -11,4 +11,5 @@ class Site{
         Site(std::string header, std::string body);
         std::string getBody();
         uint32_t getStatusCode();
+        std::string getHeader();
 };

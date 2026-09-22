@@ -4,6 +4,7 @@
 #include "link.hpp"
 
 class GeminiClient {
+        Site* getNetworkedSite(Link link);
     public:
         Site* fetchSite(Link link);
 };

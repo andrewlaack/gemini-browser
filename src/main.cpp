@@ -5,6 +5,5 @@
 
 int main() {
     Browser b{};
-    b.goToSite("tests/sites/basic.gmi");
-    b.goToSite("basic_2.gmi");
+    b.goToSite("gemini://laack.co");
 }
