@@ -1,0 +1,5 @@
+# Hello World 2
+
+This is basic_2.gmi!
+
+=> basic.gmi Back to the basics!

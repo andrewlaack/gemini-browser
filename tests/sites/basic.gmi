@@ -1,0 +1,5 @@
+# Hello World
+
+This is a simple gemtext site, hosted on the filesystem!!!
+
+=> basic_2.gmi Other Page!
