@@ -1,5 +1,5 @@
 build:
-	g++ src/main.cpp src/link.cpp  src/plaintext.cpp src/site.cpp src/utils.cpp src/gemini-client.cpp src/browser.cpp -lssl -lcrypto -lncurses -o browser.out
+	g++ src/main.cpp src/link.cpp  src/plaintext.cpp src/site.cpp src/utils.cpp src/gemini-client.cpp src/browser.cpp -lssl -lcrypto -lncursesw -o browser.out
 
 install:
 	echo "Not implemented"

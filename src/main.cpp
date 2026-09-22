@@ -4,6 +4,17 @@
 #include <iostream>
 #include <ncurses.h>
 
+// we do this because this is buiult against ncurses, would be nice to do away w/ this
+// bc ppl use lots of emojis on gemini sites.
+std::string removeNonAscii(const std::string& s) {
+    std::string out;
+    for (int c: s)
+        if ((c >= 0x20 && c < 0x7E) || (c == '\t' || c == '\n')) {
+            out += c;
+        }
+    return out;
+}
+
 void draw(int y, std::vector<std::string>& strLs) {
     move(0,0);
     for(int i = y;i-y+1 < LINES && i < strLs.size(); ++i) {
@@ -26,19 +37,14 @@ int main() {
     curs_set(0); // hide cursor
 	keypad(stdscr,TRUE);
 
-    endwin();
-    b.goToSite("gemini://tlgs.one");
+    b.goToSite("gemini://tlgs.one/");
     auto current = b.renderSite();
-    std::cout << b.getCurrentSite()->getBody() << std::endl;
-    std::cout << "OTHER OTHER" << std::endl;
-    std::cout << current << std::endl;
-    return 0;
+    current = removeNonAscii(current);
     auto strLs = stringToList(current);
 
     int input;
     int y = 0;
     int x = 0;
-    bool first = true;
 
     while( input != 'q') {
         if(input == KEY_DOWN) {
@@ -57,7 +63,7 @@ int main() {
 
 
         y = std::max(0,y);
-        y = std::min(y,lowestPos(strLs));
+        y = std::max(0,std::min(y,lowestPos(strLs)));
 
         draw(y, strLs);
 

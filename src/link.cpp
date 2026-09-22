@@ -47,12 +47,19 @@ uri Link::parseDestination(std::string destination, std::optional<uri> prior) {
         if(prior != std::nullopt) {
             // TODO: Handle port
             std::string truncated = truncateAfter(prior->get_scheme() + "://" + prior->get_host() + "/" + prior->get_path(), '/');
+
             destination = truncated + destination;
-        } else {
+        } 
+        else {
             destination = "file://" + destination;
         }
     }
+    try {
     return uri{destination};
+    } catch(...) {
+        invalid = true;
+        return uri{"gemini://broken-link.com"}; // TODO: Handle this better
+    }
 }
 
 uri Link::getLinkDestination() {
