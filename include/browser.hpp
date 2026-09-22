@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <unordered_map>
 #include <vector>
 #include "line.hpp"
 #include "site.hpp"
@@ -8,6 +9,7 @@
 
 class Browser {
     private:
+        std::unordered_map<std::string, int> previousStatusCodes;
         std::vector<Link*> siteHistory;
         int previousIdx = -1;
         Site* currentSite;

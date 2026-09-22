@@ -49,6 +49,7 @@ void Browser::goToSite(std::string url, bool addToHistory) {
     currentSite = site;
     lines = toLines(site);
     setLinksOfCurrentLines();
+    previousStatusCodes[destination->getLinkDestination().to_string()] = site->getStatusCode();
 }
 
 void Browser::setLinksOfCurrentLines() {
@@ -114,18 +115,23 @@ void Browser::followLinkNumber(int linkToFollow) {
 
 void Browser::goBack() {
     previousIdx -= 1;
-    goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
-    while(!(this->getCurrentSite()->getStatusCode() >= 20  && this->getCurrentSite()->getStatusCode() <= 29)) {
+    int prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
+    while(!(prSC >= 20 && prSC <= 29)) {
         previousIdx -= 1;
-        goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+        prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
     }
+
+    goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
 }
 
 void Browser::goForward() {
     previousIdx += 1;
-    goToSite(siteHistory[previousIdx]->getLinkDestination().to_string(), false);
-    while(!(this->getCurrentSite()->getStatusCode() >= 20  && this->getCurrentSite()->getStatusCode() <= 29)) {
+
+    int prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
+    while(!(prSC >= 20 && prSC <= 29)) {
         previousIdx += 1;
-        goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+        prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
     }
+
+    goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
 }
