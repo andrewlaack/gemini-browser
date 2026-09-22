@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 bool isPrefixed(std::string input, std::string prefix) {
     return std::string(input).find(prefix) == 0;
@@ -32,4 +33,25 @@ std::string truncateAfter(std::string input, char truncate) {
         }
     }
     return input;
+}
+
+std::vector<std::string> stringToList(std::string input)
+{
+    std::vector<std::string> res;
+    if (!input.empty()) {
+        int start = 0;
+        do {
+            int idx = input.find('\n', start);
+            if (idx == std::string::npos) {
+                break;
+            }
+            int length = idx - start;
+            res.push_back(input.substr(start, length));
+            start += (length + 1);
+
+        } while (true);
+        res.push_back(input.substr(start));
+    }
+
+    return res;
 }
