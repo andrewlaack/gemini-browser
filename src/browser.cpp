@@ -3,7 +3,6 @@
 #include "../include/gemini-client.hpp"
 #include "../include/utils.hpp"
 #include <cstddef>
-#include <iostream>
 #include <optional>
 #include <utility>
 #include <vector>
@@ -116,9 +115,17 @@ void Browser::followLinkNumber(int linkToFollow) {
 void Browser::goBack() {
     previousIdx -= 1;
     goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+    while(!(this->getCurrentSite()->getStatusCode() >= 20  && this->getCurrentSite()->getStatusCode() <= 29)) {
+        previousIdx -= 1;
+        goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+    }
 }
 
 void Browser::goForward() {
     previousIdx += 1;
     goToSite(siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+    while(!(this->getCurrentSite()->getStatusCode() >= 20  && this->getCurrentSite()->getStatusCode() <= 29)) {
+        previousIdx += 1;
+        goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+    }
 }

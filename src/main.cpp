@@ -222,18 +222,12 @@ int main(int argc, char** argv) {
             y -= LINES / 2;
         } else if(input == 'f') {
             b.goForward();
-            while(!(b.getCurrentSite()->getStatusCode() >= 20 && b.getCurrentSite()->getStatusCode() <= 29)) {
-                b.goForward();
-            }
 
             current = b.renderSite();
             removeNonAscii(current);
 
         } else if(input == 'b') {
             b.goBack();
-            while(!(b.getCurrentSite()->getStatusCode() >= 20 && b.getCurrentSite()->getStatusCode() <= 29)) {
-                b.goBack();
-            }
 
             current = b.renderSite();
             removeNonAscii(current);
@@ -258,9 +252,6 @@ int main(int argc, char** argv) {
             Direction dir = handleRedir(ds);
             if(dir == BACKWARD) {
                 b.goBack();
-                while(!(b.getCurrentSite()->getStatusCode() >= 20 && b.getCurrentSite()->getStatusCode() <= 29)) {
-                    b.goBack();
-                }
             } else {
                 b.goToSite(b.getCurrentSite()->getMeta(),true);
             }
