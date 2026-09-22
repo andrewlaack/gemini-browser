@@ -1,5 +1,6 @@
 #include "../include/browser.hpp"
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <ncurses.h>
 #include <utility>
@@ -32,7 +33,7 @@ void initColors() {
 
 void draw(int y, std::vector<std::pair<std::string, int>>& strLs) {
     move(0,0);
-
+    clear();
     for(int i = y;i-y+1 < LINES && i < strLs.size(); ++i) {
         move(i - y, 0);
         attron(COLOR_PAIR(strLs[i].second + 1));
@@ -44,6 +45,32 @@ void draw(int y, std::vector<std::pair<std::string, int>>& strLs) {
 int lowestPos(std::vector<std::pair<std::string, int>>& strLs) {
     return strLs.size() - LINES;
 }
+
+int linkHandler() {
+
+    int acc = 0;
+    int num = 0;
+    int itr = 0;
+
+    while(num!=-1) {
+        int sel = getch();
+        num = (sel - 0x30);
+
+        if(sel == '\n' || sel == KEY_ENTER) {
+            num = -1;
+            continue;
+        }
+
+        if(num > 9 || num < 0) {
+            continue;
+        }
+        acc += num * (std::pow(10,itr));
+        itr += 1;
+    }
+
+    return acc;
+}
+
 
 int main() {
 
@@ -60,7 +87,8 @@ int main() {
     use_default_colors();
     initColors();
 
-    b.goToSite("gemini://laack.co");
+    endwin();
+    b.goToSite("gemini://tlgs.one/known-hosts");
 
     auto current = b.renderSite();
     removeNonAscii(current);
@@ -82,8 +110,16 @@ int main() {
             y += LINES / 2;
         } else if (input == 0x15) {
             y -= LINES / 2;
-        }
+        } else if(input == ' ') {
+            int linkToFollow = linkHandler();
+            if(linkToFollow != -1) {
+                b.followLinkNumber(linkToFollow);
+                current = b.renderSite();
+                removeNonAscii(current);
+            }
 
+
+        }
 
         y = std::max(0,y);
         y = std::max(0,std::min(y,lowestPos(current)));

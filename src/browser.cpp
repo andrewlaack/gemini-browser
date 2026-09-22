@@ -2,7 +2,9 @@
 #include "../include/site.hpp"
 #include "../include/gemini-client.hpp"
 #include "../include/utils.hpp"
+#include <cstddef>
 #include <iostream>
+#include <iterator>
 #include <optional>
 #include <utility>
 #include <vector>
@@ -36,7 +38,18 @@ void Browser::goToSite(std::string url) {
     }
     currentSite = site;
     lines = toLines(site);
+    setLinksOfCurrentLines();
 }
+
+void Browser::setLinksOfCurrentLines() {
+    links = std::vector<std::size_t> {};
+    for(std::size_t i = 0; i < lines.size(); ++i) {
+        if(lines[i]->type() == LINK) {
+            links.push_back(i);
+        }
+    }
+}
+
 
 // TODO: This is a pure function.
 std::vector<Line*> Browser::toLines(Site* site) {
@@ -81,5 +94,11 @@ std::optional<uri> Browser::getPriorUri() {
     }
     return std::nullopt;
 
+}
+
+void Browser::followLinkNumber(int linkToFollow) {
+    Line* ptr = lines[links[linkToFollow-1]];
+    Link* ptrLnk = dynamic_cast<Link*>(ptr);
+    goToSite(ptrLnk->getLinkDestination().to_string());
 }
 
