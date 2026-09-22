@@ -1,6 +1,4 @@
 #include "../include/browser.hpp"
-#include "../include/site.hpp"
-#include "../include/link.hpp"
 #include "../include/utils.hpp"
 #include <algorithm>
 #include <iostream>
@@ -28,8 +26,13 @@ int main() {
     curs_set(0); // hide cursor
 	keypad(stdscr,TRUE);
 
-    b.goToSite("gemini://tlgs.one/known-hosts");
-    auto current = b.getCurrentSite()->getBody();
+    endwin();
+    b.goToSite("gemini://tlgs.one");
+    auto current = b.renderSite();
+    std::cout << b.getCurrentSite()->getBody() << std::endl;
+    std::cout << "OTHER OTHER" << std::endl;
+    std::cout << current << std::endl;
+    return 0;
     auto strLs = stringToList(current);
 
     int input;

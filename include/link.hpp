@@ -3,8 +3,9 @@
 #include <optional>
 #include <string>
 #include "../vendor/uri.hpp"
+#include "line.hpp"
 
-class Link {
+class Link : public Line {
     private:
         uri linkDestination = uri("gemini://example.com");
         std::optional<std::string> linkText;
@@ -13,4 +14,5 @@ class Link {
         Link(std::string text, std::optional<uri> prior = std::nullopt);
         uri getLinkDestination();
         std::optional<std::string> getLinkText();
+        std::string textToDraw() override;
 };

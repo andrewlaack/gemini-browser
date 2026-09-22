@@ -61,3 +61,10 @@ uri Link::getLinkDestination() {
 std::optional<std::string> Link::getLinkText() {
     return linkText;
 }
+
+std::string Link::textToDraw() {
+    if(linkText != std::nullopt) {
+        return linkText.value() + "\n";
+    }
+    return linkDestination.to_string() + "\n";
+}

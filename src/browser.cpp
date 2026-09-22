@@ -1,6 +1,9 @@
 #include "../include/browser.hpp"
 #include "../include/site.hpp"
 #include "../include/gemini-client.hpp"
+#include "../include/utils.hpp"
+#include <iostream>
+#include <optional>
 
 void Browser::goToSite(std::string url) {
 
@@ -29,9 +32,22 @@ void Browser::goToSite(std::string url) {
     if(currentSite != nullptr) {
         delete currentSite;
     }
-    
     currentSite = site;
+    lines = toLines(site);
 }
+
+// TODO: This is a pure function.
+std::vector<Line*> Browser::toLines(Site* site) {
+    auto lines = stringToList(site->getBody());
+
+    std::vector<Line*> res{};
+
+    for(auto line: lines) {
+        res.push_back(lineToLine(line, getPriorUri()));
+    }
+    return res;
+}
+
 
 Browser::Browser() {
     currentSite = nullptr;
@@ -40,3 +56,21 @@ Browser::Browser() {
 Site* Browser::getCurrentSite() {
     return currentSite;
 }
+
+std::string Browser::renderSite() {
+    std::string res = "";
+    for(auto* line: lines) {
+        res += line->textToDraw();
+    }
+    return res;
+}
+
+
+std::optional<uri> Browser::getPriorUri() {
+    if(previousIdx < siteHistory.size() && previousIdx >= 0) {
+        return siteHistory[previousIdx]->getLinkDestination();
+    }
+    return std::nullopt;
+
+}
+

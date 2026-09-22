@@ -1,5 +1,7 @@
 #include "../include/utils.hpp"
+#include "../include/link.hpp"
 #include "../include/errors.hpp"
+#include "../include/plaintext.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <fstream>
@@ -54,4 +56,12 @@ std::vector<std::string> stringToList(std::string input)
     }
 
     return res;
+}
+
+Line* lineToLine(std::string input, std::optional<uri> prior) {
+    if(input.substr(0,2) == "=>") {
+        Link* ln = new Link{input, prior};
+        return ln;
+    }
+    return new Plaintext{input};
 }
