@@ -36,7 +36,10 @@ void Browser::goToSite(std::string url, bool addToHistory) {
     }
 
     if(addToHistory) {
-        siteHistory.resize(previousIdx + 1);
+        while(siteHistory.size() > previousIdx + 1) {
+            delete siteHistory[siteHistory.size() -  1];
+            siteHistory.pop_back();
+        }
         siteHistory.push_back(destination);
         previousIdx = siteHistory.size() - 1;
     }

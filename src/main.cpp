@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <iostream>
 #include <ncurses.h>
 #include <utility>
 #include <vector>
@@ -32,14 +31,29 @@ void initColors() {
     }
 }
 
-void draw(int y, std::vector<std::pair<std::string, int>>& strLs) {
+struct DrawState {
+    int y;
+    std::vector<std::pair<std::string, int>> strLs;
+    bool handleInput;
+    std::string userInput;
+};
+
+
+void draw(DrawState ds) {
+
     move(0,0);
     clear();
-    for(int i = y;i-y+1 < LINES && i < strLs.size(); ++i) {
-        move(i - y, 0);
-        attron(COLOR_PAIR(strLs[i].second + 1));
-        addstr(strLs[i].first.c_str());
-        attroff(COLOR_PAIR(strLs[i].second + 1));
+
+    if(ds.handleInput) {
+        addstr("input: ");
+        addstr(ds.userInput.c_str());
+    } else {
+        for(int i = ds.y;i-ds.y+1 < LINES && i < ds.strLs.size(); ++i) {
+            move(i - ds.y, 0);
+            attron(COLOR_PAIR(ds.strLs[i].second + 1));
+            addstr(ds.strLs[i].first.c_str());
+            attroff(COLOR_PAIR(ds.strLs[i].second + 1));
+        }
     }
 }
 
@@ -72,9 +86,11 @@ int linkHandler() {
     return acc;
 }
 
-std::string handleUserInput() {
+std::string handleUserInput(DrawState ds) {
 
-    std::string acc = "?";
+    ds.handleInput = true;
+    draw(ds);
+    std::string acc = "";
 
     while(true) {
         int sel = getch();
@@ -83,15 +99,21 @@ std::string handleUserInput() {
         }
 
         acc += std::string {(char)sel};
+        ds.userInput = acc;
+        draw(ds);
     }
 
-    return acc;
+    ds.handleInput = false;
+    draw(ds);
+    return "?" + acc;
 }
 
 
-int main() {
+int main(int argc, char** argv) {
 
     Browser b{};
+
+    DrawState ds {};
 
     initscr();
     noecho(); // don't echo user inputs
@@ -104,13 +126,16 @@ int main() {
     use_default_colors();
     initColors();
 
-    endwin();
-    b.goToSite("gemini://tlgs.one",true);
+    if(argc > 1) {
+        b.goToSite(argv[1],true);
+    } else {
+        b.goToSite("gemini://tlgs.one",true);
+    }
 
     auto current = b.renderSite();
     removeNonAscii(current);
 
-    int input;
+    int input = 0;
     int y = 0;
     int x = 0;
 
@@ -141,7 +166,7 @@ int main() {
             if(linkToFollow != -1) {
                 b.followLinkNumber(linkToFollow);
                 if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
-                    std::string inputQuery = handleUserInput();
+                    std::string inputQuery = handleUserInput(ds);
                     if(inputQuery != "?") { // TODO: Better handling
                         b.goToSite(inputQuery,true);
                         current = b.renderSite();
@@ -158,8 +183,10 @@ int main() {
 
         y = std::max(0,y);
         y = std::max(0,std::min(y,lowestPos(current)));
+        ds.y = y;
+        ds.strLs = current;
 
-        draw(y, current);
+        draw(ds);
 
 
         refresh();
