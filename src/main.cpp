@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <iostream>
 #include <ncurses.h>
 #include <utility>
 #include <vector>
@@ -71,6 +72,22 @@ int linkHandler() {
     return acc;
 }
 
+std::string handleUserInput() {
+
+    std::string acc = "?";
+
+    while(true) {
+        int sel = getch();
+        if(sel == '\n' || sel == KEY_ENTER) {
+            break;
+        }
+
+        acc += std::string {(char)sel};
+    }
+
+    return acc;
+}
+
 
 int main() {
 
@@ -88,7 +105,7 @@ int main() {
     initColors();
 
     endwin();
-    b.goToSite("gemini://tlgs.one/known-hosts");
+    b.goToSite("gemini://tlgs.one");
 
     auto current = b.renderSite();
     removeNonAscii(current);
@@ -114,10 +131,19 @@ int main() {
             int linkToFollow = linkHandler();
             if(linkToFollow != -1) {
                 b.followLinkNumber(linkToFollow);
-                current = b.renderSite();
-                removeNonAscii(current);
-            }
+                if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
+                    std::string inputQuery = handleUserInput();
+                    if(inputQuery != "?") { // TODO: Better handling
+                        b.goToSite(inputQuery);
+                        current = b.renderSite();
+                        removeNonAscii(current);
+                    }
 
+                } else {
+                    current = b.renderSite();
+                    removeNonAscii(current);
+                }
+            }
 
         }
 

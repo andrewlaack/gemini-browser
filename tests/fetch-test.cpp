@@ -74,3 +74,10 @@ TEST_CASE("Send basic gemini requests") {
     delete s;
 }
 
+
+TEST_CASE("Send request to non-existent gemini server") {
+    auto client = GeminiClient {};
+    auto ln = Link{"=> gemini://this.cant.be.a.site123"};
+    Site* s = client.fetchSite(ln);
+    REQUIRE(s == nullptr);
+}

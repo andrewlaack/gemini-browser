@@ -51,19 +51,21 @@ Site* GeminiClient::fetchSite(Link link) {
 
     // TODO: Actually handle uris
     if(isPrefixed(destination, "gemini://")) {
-        return getNetworkedSite(link);
+        try {
+            return getNetworkedSite(link);
+        } catch (...) {
+            auto* unreach = new Site{"", ""};
+            unreach->setUnreachable();
+            return unreach;
+        }
     } else if (isPrefixed(destination, "file://")){
-
         destination = destination.substr(7, destination.size() - 7);
-
         std::string fileStr = "";
-
         try {
             fileStr = readFileToString(destination);
         } catch (FileReadError e ) {
             return new Site {"51 \r\n", ""};
         }
-
         // TODO: how should I discern file types?
         return new Site {"20 text/gemini\r\n", fileStr};
     } else {

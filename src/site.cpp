@@ -18,3 +18,12 @@ uint32_t Site::getStatusCode() {
     uint32_t statusCode = std::stoi(header.substr(0,2));
     return statusCode;
 }
+
+void Site::setUnreachable() {
+    unreachable = true;
+}
+
+bool Site::getUnreachable() {
+    return unreachable;
+}
+

@@ -10,9 +10,12 @@ class Site{
         std::string body;
         std::vector<Line*> lines; 
         std::string header;
+        bool unreachable = false;
     public:
         Site(std::string header, std::string body);
         std::string getBody();
         uint32_t getStatusCode();
         std::string getHeader();
+        void setUnreachable();
+        bool getUnreachable();
 };

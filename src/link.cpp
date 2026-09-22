@@ -10,11 +10,14 @@ Link::Link(std::string text, std::optional<uri> prior, int linkNumber) {
 
     this->linkNumber = linkNumber;
 
+    if (text.substr(0, 2) != "=>") {
+        linkDestination = parseDestination(text, prior);
+        return;
+    }
+
     std::string afterPrefix = text;
 
-    if(text.substr(0,2) == "=>") {
-         afterPrefix = text.substr(2,text.size());
-    }
+     afterPrefix = text.substr(2,text.size());
 
     int highest = -1;
 
@@ -45,12 +48,26 @@ Link::Link(std::string text, std::optional<uri> prior, int linkNumber) {
 uri Link::parseDestination(std::string destination, std::optional<uri> prior) {
 
     // TODO: Not sure if this is right w/ how file paths work.
-    if(destination.find("://") == -1) {
+    if(destination.find(":") == -1) {
         if(prior != std::nullopt) {
-            // TODO: Handle port
-            std::string truncated = truncateAfter(prior->get_scheme() + "://" + prior->get_host() + "/" + prior->get_path(), '/');
+            // query parameter special casing
+            if(destination.substr(0,1) == "?") {
+                std::string encoded = urlEncode(destination.substr(1));
+                return uri{prior.value().to_string() + "?" + encoded};
+            }
 
-            destination = truncated + destination;
+            std::string base = prior->get_scheme() + "://" + prior->get_host();
+
+            if (destination[0] == '/') {
+                destination = base + destination;
+            } else {
+
+                std::string path = prior->get_path();
+                if (path[0] != '/') {
+                    path = "/" + path;
+                }
+                destination = base + path.substr(0, path.rfind('/') + 1) + destination;
+            }
         } 
         else {
             destination = "file://" + destination;

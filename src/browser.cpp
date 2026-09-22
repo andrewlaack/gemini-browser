@@ -4,7 +4,6 @@
 #include "../include/utils.hpp"
 #include <cstddef>
 #include <iostream>
-#include <iterator>
 #include <optional>
 #include <utility>
 #include <vector>
@@ -27,11 +26,18 @@ void Browser::goToSite(std::string url) {
         destination = new Link{url,prior->getLinkDestination()};
     }
 
-    // TODO: Will need to clean up
+
+    Site* site = client.fetchSite(*destination);
+    if(site == nullptr || site->getUnreachable()) {
+        if(site != nullptr) {
+            delete site;
+        }
+        return;
+    }
+
     siteHistory.push_back(destination);
     previousIdx += 1;
 
-    Site* site = client.fetchSite(*destination);
 
     if(currentSite != nullptr) {
         delete currentSite;
