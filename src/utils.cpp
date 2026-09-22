@@ -58,9 +58,9 @@ std::vector<std::string> stringToList(std::string input)
     return res;
 }
 
-Line* lineToLine(std::string input, std::optional<uri> prior) {
+Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount) {
     if(input.substr(0,2) == "=>") {
-        Link* ln = new Link{input, prior};
+        Link* ln = new Link{input, prior, linkCount};
         return ln;
     }
     return new Plaintext{input};

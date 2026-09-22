@@ -1,12 +1,14 @@
 #include "../include/link.hpp"
-#include <iostream>
 #include <optional>
 #include <string>
 #include "../include/utils.hpp"
 #include "../vendor/uri.hpp"
+#include <ncurses.h>
 
 
-Link::Link(std::string text, std::optional<uri> prior) {
+Link::Link(std::string text, std::optional<uri> prior, int linkNumber) {
+
+    this->linkNumber = linkNumber;
 
     std::string afterPrefix = text;
 
@@ -71,7 +73,16 @@ std::optional<std::string> Link::getLinkText() {
 
 std::string Link::textToDraw() {
     if(linkText != std::nullopt) {
-        return linkText.value() + "\n";
+        return "[" + std::to_string(linkNumber) + "] - " + linkText.value() + "\n";
+
     }
-    return linkDestination.to_string() + "\n";
+    return "[" + std::to_string(linkNumber) + "] - " + linkDestination.to_string() + "\n";
+}
+
+int Link::getColor() {
+    return COLOR_RED;
+}
+
+LineType Link::type() {
+    return LINK;
 }

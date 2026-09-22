@@ -1,5 +1,4 @@
 #include <catch2/catch_test_macros.hpp>
-#include "../include/link.hpp"
 #include "../include/browser.hpp"
 #include "../include/utils.hpp"
 

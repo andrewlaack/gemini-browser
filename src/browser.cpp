@@ -4,6 +4,8 @@
 #include "../include/utils.hpp"
 #include <iostream>
 #include <optional>
+#include <utility>
+#include <vector>
 
 void Browser::goToSite(std::string url) {
 
@@ -38,12 +40,18 @@ void Browser::goToSite(std::string url) {
 
 // TODO: This is a pure function.
 std::vector<Line*> Browser::toLines(Site* site) {
+
     auto lines = stringToList(site->getBody());
 
     std::vector<Line*> res{};
 
+    int lc = 1;
+
     for(auto line: lines) {
-        res.push_back(lineToLine(line, getPriorUri()));
+        res.push_back(lineToLine(line, getPriorUri(), lc));
+        if(res[res.size() - 1]->type() == LINK) {
+            lc += 1;
+        }
     }
     return res;
 }
@@ -57,10 +65,11 @@ Site* Browser::getCurrentSite() {
     return currentSite;
 }
 
-std::string Browser::renderSite() {
-    std::string res = "";
+std::vector<std::pair<std::string, int>> Browser::renderSite() {
+    std::vector<std::pair<std::string, int>> res{};
     for(auto* line: lines) {
-        res += line->textToDraw();
+        std::pair<std::string,int> cp {line->textToDraw(), line->getColor()};
+        res.push_back(cp);
     }
     return res;
 }

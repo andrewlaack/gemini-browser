@@ -6,5 +6,7 @@ class Plaintext : public Line {
         std::string text = "";
     public:
         Plaintext(std::string text);
-        std::string textToDraw();
+        std::string textToDraw() override;
+        int getColor() override;
+        LineType type() override;
 };

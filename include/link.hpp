@@ -10,10 +10,13 @@ class Link : public Line {
         uri linkDestination = uri("gemini://example.com");
         std::optional<std::string> linkText;
         bool invalid;
+        int linkNumber;
         uri parseDestination(std::string destination, std::optional<uri> prior);
     public:
-        Link(std::string text, std::optional<uri> prior = std::nullopt);
+        Link(std::string text, std::optional<uri> prior = std::nullopt, int linkNumber = -1);
         uri getLinkDestination();
         std::optional<std::string> getLinkText();
         std::string textToDraw() override;
+        int getColor() override;
+        LineType type() override;
 };

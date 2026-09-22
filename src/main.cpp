@@ -1,29 +1,47 @@
 #include "../include/browser.hpp"
-#include "../include/utils.hpp"
 #include <algorithm>
-#include <iostream>
+#include <cstddef>
 #include <ncurses.h>
+#include <utility>
+#include <vector>
 
 // we do this because this is buiult against ncurses, would be nice to do away w/ this
 // bc ppl use lots of emojis on gemini sites.
-std::string removeNonAscii(const std::string& s) {
-    std::string out;
-    for (int c: s)
-        if ((c >= 0x20 && c < 0x7E) || (c == '\t' || c == '\n')) {
-            out += c;
-        }
-    return out;
+
+void removeNonAscii(std::vector<std::pair<std::string, int>>& strLs) {
+
+    for(std::size_t i = 0; i < strLs.size(); ++i) {
+
+        std::string& s = strLs[i].first;
+
+        std::string out;
+        for (int c: s)
+            if ((c >= 0x20 && c < 0x7E) || (c == '\t' || c == '\n')) {
+                out += c;
+            }
+        strLs[i].first = out;
+    }
+    return;
 }
 
-void draw(int y, std::vector<std::string>& strLs) {
-    move(0,0);
-    for(int i = y;i-y+1 < LINES && i < strLs.size(); ++i) {
-        addstr((strLs[i] + '\n').c_str());
-        move(i-y+1,0);
+void initColors() {
+    for (int c = 0; c < COLORS; ++c) {
+        init_pair(c + 1, c, -1);
     }
 }
 
-int lowestPos(std::vector<std::string>& strLs) {
+void draw(int y, std::vector<std::pair<std::string, int>>& strLs) {
+    move(0,0);
+
+    for(int i = y;i-y+1 < LINES && i < strLs.size(); ++i) {
+        move(i - y, 0);
+        attron(COLOR_PAIR(strLs[i].second + 1));
+        addstr(strLs[i].first.c_str());
+        attroff(COLOR_PAIR(strLs[i].second + 1));
+    }
+}
+
+int lowestPos(std::vector<std::pair<std::string, int>>& strLs) {
     return strLs.size() - LINES;
 }
 
@@ -37,10 +55,15 @@ int main() {
     curs_set(0); // hide cursor
 	keypad(stdscr,TRUE);
 
-    b.goToSite("gemini://tlgs.one/");
+    // TODO: Check colors available first
+    start_color();
+    use_default_colors();
+    initColors();
+
+    b.goToSite("gemini://laack.co");
+
     auto current = b.renderSite();
-    current = removeNonAscii(current);
-    auto strLs = stringToList(current);
+    removeNonAscii(current);
 
     int input;
     int y = 0;
@@ -54,7 +77,7 @@ int main() {
         } else if (input == 'g'){
             y = 0;
         } else if (input == 'G'){
-            y = lowestPos(strLs);
+            y = lowestPos(current);
         } else if (input == 0x04){
             y += LINES / 2;
         } else if (input == 0x15) {
@@ -63,9 +86,9 @@ int main() {
 
 
         y = std::max(0,y);
-        y = std::max(0,std::min(y,lowestPos(strLs)));
+        y = std::max(0,std::min(y,lowestPos(current)));
 
-        draw(y, strLs);
+        draw(y, current);
 
 
         refresh();

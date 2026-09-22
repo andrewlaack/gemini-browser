@@ -7,3 +7,12 @@ Plaintext::Plaintext(std::string input) {
 std::string Plaintext::textToDraw() {
     return text + "\n";
 }
+
+int Plaintext::getColor() {
+    return 15;
+}
+
+LineType Plaintext::type() {
+    return PLAINTEXT;
+}
+

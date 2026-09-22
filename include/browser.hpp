@@ -16,6 +16,6 @@ class Browser {
         void goToSite(std::string url);
         Site* getCurrentSite();
         std::optional<uri> getPriorUri();
-        std::string renderSite();
+        std::vector<std::pair<std::string, int>> renderSite();
         std::vector<Line*> toLines(Site* site);
 };
