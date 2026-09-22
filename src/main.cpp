@@ -105,7 +105,7 @@ int main() {
     initColors();
 
     endwin();
-    b.goToSite("gemini://tlgs.one");
+    b.goToSite("gemini://tlgs.one",true);
 
     auto current = b.renderSite();
     removeNonAscii(current);
@@ -127,6 +127,15 @@ int main() {
             y += LINES / 2;
         } else if (input == 0x15) {
             y -= LINES / 2;
+        } else if(input == 'f') {
+            b.goForward();
+            current = b.renderSite();
+            removeNonAscii(current);
+
+        } else if(input == 'b') {
+            b.goBack();
+            current = b.renderSite();
+            removeNonAscii(current);
         } else if(input == ' ') {
             int linkToFollow = linkHandler();
             if(linkToFollow != -1) {
@@ -134,7 +143,7 @@ int main() {
                 if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
                     std::string inputQuery = handleUserInput();
                     if(inputQuery != "?") { // TODO: Better handling
-                        b.goToSite(inputQuery);
+                        b.goToSite(inputQuery,true);
                         current = b.renderSite();
                         removeNonAscii(current);
                     }

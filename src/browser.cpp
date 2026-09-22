@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-void Browser::goToSite(std::string url) {
+void Browser::goToSite(std::string url, bool addToHistory) {
 
     Link* prior = nullptr;
 
@@ -35,9 +35,11 @@ void Browser::goToSite(std::string url) {
         return;
     }
 
-    siteHistory.push_back(destination);
-    previousIdx += 1;
-
+    if(addToHistory) {
+        siteHistory.resize(previousIdx + 1);
+        siteHistory.push_back(destination);
+        previousIdx = siteHistory.size() - 1;
+    }
 
     if(currentSite != nullptr) {
         delete currentSite;
@@ -105,6 +107,15 @@ std::optional<uri> Browser::getPriorUri() {
 void Browser::followLinkNumber(int linkToFollow) {
     Line* ptr = lines[links[linkToFollow-1]];
     Link* ptrLnk = dynamic_cast<Link*>(ptr);
-    goToSite(ptrLnk->getLinkDestination().to_string());
+    goToSite(ptrLnk->getLinkDestination().to_string(), true);
 }
 
+void Browser::goBack() {
+    previousIdx -= 1;
+    goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+}
+
+void Browser::goForward() {
+    previousIdx += 1;
+    goToSite(siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+}

@@ -6,9 +6,9 @@
 TEST_CASE( "Basic navigation" ) {
 
     Browser b{};
-    b.goToSite("tests/sites/basic.gmi");
+    b.goToSite("tests/sites/basic.gmi", true);
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic.gmi"));
-    b.goToSite("basic_2.gmi");
+    b.goToSite("basic_2.gmi", true);
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic_2.gmi"));
 }
 
