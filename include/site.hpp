@@ -16,6 +16,7 @@ class Site{
         std::string getBody();
         uint32_t getStatusCode();
         std::string getHeader();
+        std::string getMeta();
         void setUnreachable();
         bool getUnreachable();
 };

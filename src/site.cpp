@@ -19,6 +19,12 @@ uint32_t Site::getStatusCode() {
     return statusCode;
 }
 
+std::string Site::getMeta() {
+    std::string meta = header.substr(3);
+    return meta;
+}
+
+
 void Site::setUnreachable() {
     unreachable = true;
 }

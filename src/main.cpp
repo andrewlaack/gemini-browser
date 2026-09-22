@@ -2,11 +2,13 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <iostream>
 #include <ncurses.h>
+#include <string>
 #include <utility>
 #include <vector>
 
-// we do this because this is buiult against ncurses, would be nice to do away w/ this
+// we do this because this is built against ncurses, would be nice to do away w/ this
 // bc ppl use lots of emojis on gemini sites.
 
 void removeNonAscii(std::vector<std::pair<std::string, int>>& strLs) {
@@ -35,6 +37,10 @@ struct DrawState {
     int y;
     std::vector<std::pair<std::string, int>> strLs;
     bool handleInput;
+    bool handleLinkFollow;
+    bool handleRedirect;
+    std::string redirInput;
+    std::string linkInput;
     std::string userInput;
 };
 
@@ -47,6 +53,22 @@ void draw(DrawState ds) {
     if(ds.handleInput) {
         addstr("input: ");
         addstr(ds.userInput.c_str());
+    } else if (ds.handleRedirect) {
+        addstr("Follow redirect (y/n): ");
+        addstr(ds.redirInput.c_str());
+    } else if (ds.handleLinkFollow) {
+        for(int i = ds.y;i-ds.y+1 < LINES && i < ds.strLs.size(); ++i) {
+            move(i - ds.y, 0);
+            attron(COLOR_PAIR(ds.strLs[i].second + 1));
+            addstr(ds.strLs[i].first.c_str());
+            attroff(COLOR_PAIR(ds.strLs[i].second + 1));
+        }
+
+        move(LINES-1, 0);
+        addstr("Following: ");
+        addstr(ds.linkInput.c_str());
+
+
     } else {
         for(int i = ds.y;i-ds.y+1 < LINES && i < ds.strLs.size(); ++i) {
             move(i - ds.y, 0);
@@ -61,7 +83,10 @@ int lowestPos(std::vector<std::pair<std::string, int>>& strLs) {
     return strLs.size() - LINES;
 }
 
-int linkHandler() {
+int linkHandler(DrawState ds) {
+
+    ds.handleLinkFollow = true;
+    draw(ds);
 
     int acc = 0;
     int num = 0;
@@ -79,24 +104,65 @@ int linkHandler() {
         if(num > 9 || num < 0) {
             continue;
         }
-        acc += num * (std::pow(10,itr));
+        acc = (acc * 10) + num;
         itr += 1;
+
+        ds.linkInput = std::to_string(acc);
+        draw(ds);
+
     }
+    ds.handleLinkFollow = false;
 
     return acc;
 }
 
-std::string handleUserInput(DrawState ds) {
+enum Direction {
+    FORWARD,
+    BACKWARD
+};
 
+Direction handleRedir(DrawState ds) {
+
+    ds.handleRedirect = true;
+    ds.redirInput = "";
+
+    while(true) {
+        int input = getch();
+        if(input == 'y') {
+            ds.redirInput = "y";
+            draw(ds);
+            ds.handleRedirect = false;
+            return FORWARD;
+        }
+        if(input == 'n') {
+            ds.redirInput = "n";
+            draw(ds);
+            ds.handleRedirect = false;
+            return BACKWARD;
+        }
+    }
+}
+
+std::string handleUserInput(DrawState ds) {
     ds.handleInput = true;
     draw(ds);
     std::string acc = "";
 
     while(true) {
+
         int sel = getch();
         if(sel == '\n' || sel == KEY_ENTER) {
             break;
         }
+        if(sel == KEY_BACKSPACE) {
+            if(acc.size() > 0) {
+                acc = acc.substr(0,acc.size() - 1);
+            }
+            ds.userInput = acc;
+            draw(ds);
+            continue;
+        }
+
 
         acc += std::string {(char)sel};
         ds.userInput = acc;
@@ -129,7 +195,7 @@ int main(int argc, char** argv) {
     if(argc > 1) {
         b.goToSite(argv[1],true);
     } else {
-        b.goToSite("gemini://tlgs.one",true);
+        b.goToSite("gemini://tlgs.one/search/2?test",true);
     }
 
     auto current = b.renderSite();
@@ -138,6 +204,8 @@ int main(int argc, char** argv) {
     int input = 0;
     int y = 0;
     int x = 0;
+
+    // this is the main loop.
 
     while( input != 'q') {
         if(input == KEY_DOWN) {
@@ -154,31 +222,52 @@ int main(int argc, char** argv) {
             y -= LINES / 2;
         } else if(input == 'f') {
             b.goForward();
+            while(!(b.getCurrentSite()->getStatusCode() >= 20 && b.getCurrentSite()->getStatusCode() <= 29)) {
+                b.goForward();
+            }
+
             current = b.renderSite();
             removeNonAscii(current);
 
         } else if(input == 'b') {
             b.goBack();
+            while(!(b.getCurrentSite()->getStatusCode() >= 20 && b.getCurrentSite()->getStatusCode() <= 29)) {
+                b.goBack();
+            }
+
             current = b.renderSite();
             removeNonAscii(current);
         } else if(input == ' ') {
-            int linkToFollow = linkHandler();
+            int linkToFollow = linkHandler(ds);
             if(linkToFollow != -1) {
                 b.followLinkNumber(linkToFollow);
-                if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
-                    std::string inputQuery = handleUserInput(ds);
-                    if(inputQuery != "?") { // TODO: Better handling
-                        b.goToSite(inputQuery,true);
-                        current = b.renderSite();
-                        removeNonAscii(current);
-                    }
-
-                } else {
-                    current = b.renderSite();
-                    removeNonAscii(current);
-                }
             }
 
+        }
+
+
+        if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
+            std::string inputQuery = handleUserInput(ds);
+            if(inputQuery != "?") { // TODO: Better handling
+                b.goToSite(inputQuery,true);
+                current = b.renderSite();
+                removeNonAscii(current);
+            }
+
+        } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39){
+            Direction dir = handleRedir(ds);
+            if(dir == BACKWARD) {
+                b.goBack();
+                while(!(b.getCurrentSite()->getStatusCode() >= 20 && b.getCurrentSite()->getStatusCode() <= 29)) {
+                    b.goBack();
+                }
+            } else {
+                b.goToSite(b.getCurrentSite()->getMeta(),true);
+            }
+
+        } else {
+            current = b.renderSite();
+            removeNonAscii(current);
         }
 
         y = std::max(0,y);
