@@ -17,3 +17,7 @@ LineType Preformatted::type() {
     return PLAINTEXT;
 }
 
+bool Preformatted::isBold() {
+    return false;
+}
+

@@ -5,6 +5,12 @@
 #include "line.hpp"
 #include "../vendor/uri.hpp"
 
+
+struct TextRender {
+    int color;
+    bool isBold;
+};
+
 bool isPrefixed(std::string input, std::string prefix);
 std::string readFileToString(std::string filePath);
 bool isWhiteSpace(std::string& line, int idx);
@@ -14,4 +20,4 @@ Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount, boo
 std::string urlEncode(const std::string& value);
 std::string getNewTab();
 void openUrl(const std::string& url);
-std::vector<std::pair<std::string, int>> breakLines(std::vector<std::pair<std::string, int>>& strLs, int width);
+std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair<std::string, TextRender>>& strLs, int width);

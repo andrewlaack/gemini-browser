@@ -17,3 +17,7 @@ LineType FormatSwitch::type() {
     return FORMAT_SWITCH;
 }
 
+bool FormatSwitch::isBold() {
+    return false;
+}
+

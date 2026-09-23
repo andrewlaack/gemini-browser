@@ -19,4 +19,5 @@ class Line {
         virtual int getColor() = 0;
         virtual LineType type() = 0;
         virtual ~Line() = default;
+        virtual bool isBold() = 0;
 };

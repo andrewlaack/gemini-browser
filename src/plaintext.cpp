@@ -16,3 +16,6 @@ LineType Plaintext::type() {
     return PLAINTEXT;
 }
 
+bool Plaintext::isBold() {
+    return false;
+}

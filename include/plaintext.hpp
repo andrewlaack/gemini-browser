@@ -9,4 +9,5 @@ class Plaintext : public Line {
         std::string textToDraw() override;
         int getColor() override;
         LineType type() override;
+        bool isBold() override;
 };

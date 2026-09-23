@@ -101,3 +101,8 @@ int Link::getColor() {
 LineType Link::type() {
     return LINK;
 }
+
+bool Link::isBold() {
+    return false;
+}
+

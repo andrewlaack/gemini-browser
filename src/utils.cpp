@@ -140,9 +140,9 @@ std::string getNewTab() {
 }
 
 // WIDTH IS INCLUSIVE
-std::vector<std::pair<std::string, int>> breakLines(std::vector<std::pair<std::string, int>>& strLs, int width) {
+std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair<std::string, TextRender>>& strLs, int width) {
 
-    std::vector<std::pair<std::string, int>> res {};
+    std::vector<std::pair<std::string, TextRender>> res {};
 
     for(std::size_t i = 0;  i < strLs.size(); ++i) {
 
@@ -169,12 +169,12 @@ std::vector<std::pair<std::string, int>> breakLines(std::vector<std::pair<std::s
                     current.push_back(cstr[x]);
                 }
 
-                res.push_back(std::pair<std::string,int> {toPush,strLs[i].second});
+                res.push_back(std::pair<std::string,TextRender> {toPush,strLs[i].second});
                 lastSpace = (cstr[x] == ' ') ? current.size() - 1 : -1;
             }
         }
         if(current.size() > 0) {
-            res.push_back(std::pair<std::string,int> {current,strLs[i].second});
+            res.push_back(std::pair<std::string,TextRender> {current,strLs[i].second});
             current = "";
         }
     }

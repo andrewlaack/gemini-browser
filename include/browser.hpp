@@ -7,6 +7,7 @@
 #include "site.hpp"
 #include "cache.hpp"
 #include "link.hpp"
+#include "utils.hpp"
 
 class Browser {
     private:
@@ -28,7 +29,7 @@ class Browser {
         Site* getCurrentSite();
         Link* getCurrentLink();
         std::optional<uri> getPriorUri();
-        std::vector<std::pair<std::string, int>> renderSite();
+        std::vector<std::pair<std::string, TextRender>> renderSite();
         std::vector<Line*> toLines(Site* site);
         void followLinkNumber(int linkToFollow);
         std::vector<Link> getLinkLines();

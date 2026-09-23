@@ -18,5 +18,6 @@ class Link : public Line {
         std::optional<std::string> getLinkText();
         std::string textToDraw() override;
         int getColor() override;
+        bool isBold() override;
         LineType type() override;
 };

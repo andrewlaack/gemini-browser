@@ -30,7 +30,7 @@ void aggressiveCaching(Browser* bPtr, std::vector<Link> targets, int threadIdx) 
     done[threadIdx] = true;
 }
 
-void removeNonAscii(std::vector<std::pair<std::string, int>>& strLs) {
+void removeNonAscii(std::vector<std::pair<std::string, TextRender>>& strLs) {
 
     for(std::size_t i = 0; i < strLs.size(); ++i) {
 
@@ -53,11 +53,10 @@ void initColors() {
         init_pair(c + 1, c, -1);
     }
 }
-
 struct DrawState {
     std::string header;
     int y;
-    std::vector<std::pair<std::string, int>> strLs;
+    std::vector<std::pair<std::string, TextRender>> strLs;
     bool handleInput;
     bool handleOpenOther;
     bool handleRedirect;
@@ -111,13 +110,25 @@ void draw(DrawState ds) {
 
     clear();
     move(0,(COLS / 2) - (ds.header.size() / 2) );
+
+    attron(A_BOLD);
     addstr(ds.header.c_str());
+    attroff(A_BOLD);
 
     for(int i = ds.y;i-ds.y+1 < LINES && i < ds.strLs.size(); ++i) {
         move(i - ds.y + 1, 0);
-        attron(COLOR_PAIR(ds.strLs[i].second + 1));
-        addstr(ds.strLs[i].first.c_str());
-        attroff(COLOR_PAIR(ds.strLs[i].second + 1));
+
+        attron(COLOR_PAIR(ds.strLs[i].second.color + 1));
+        if(ds.strLs[i].second.isBold) {
+            attron(A_BOLD);
+            addstr(ds.strLs[i].first.c_str());
+            attroff(A_BOLD);
+        }
+        else {
+            addstr(ds.strLs[i].first.c_str());
+        }
+        attroff(COLOR_PAIR(ds.strLs[i].second.color + 1));
+
     }
 
     if (ds.handleRedirect) {
@@ -136,7 +147,7 @@ void draw(DrawState ds) {
 
 }
 
-int lowestPos(std::vector<std::pair<std::string, int>>& strLs) {
+int lowestPos(std::vector<std::pair<std::string, TextRender>>& strLs) {
     return strLs.size() - LINES;
 }
 

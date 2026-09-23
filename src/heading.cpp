@@ -49,3 +49,6 @@ LineType Heading::type() {
             throw NotImplemented();
     }
 }
+bool Heading::isBold() {
+    return true;
+}

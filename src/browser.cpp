@@ -194,10 +194,10 @@ Site* Browser::getCurrentSite() {
     return currentSite;
 }
 
-std::vector<std::pair<std::string, int>> Browser::renderSite() {
-    std::vector<std::pair<std::string, int>> res{};
+std::vector<std::pair<std::string, TextRender>> Browser::renderSite() {
+    std::vector<std::pair<std::string, TextRender>> res{};
     for(auto* line: lines) {
-        std::pair<std::string,int> cp {line->textToDraw(), line->getColor()};
+        std::pair<std::string,TextRender> cp {line->textToDraw(), TextRender {line->getColor(), line->isBold()}};
         res.push_back(cp);
     }
     return res;
