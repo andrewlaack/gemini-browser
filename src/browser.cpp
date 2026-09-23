@@ -25,12 +25,13 @@ void Browser::goToSite(std::string url, bool addToHistory) {
         destination = new Link{url,prior->getLinkDestination()};
     }
 
-
     Site* site = client.fetchSite(*destination);
+
     if(site == nullptr || site->getUnreachable()) {
         if(site != nullptr) {
             delete site;
         }
+        goBack();
         return;
     }
 
@@ -108,30 +109,64 @@ std::optional<uri> Browser::getPriorUri() {
 }
 
 void Browser::followLinkNumber(int linkToFollow) {
-    Line* ptr = lines[links[linkToFollow-1]];
-    Link* ptrLnk = dynamic_cast<Link*>(ptr);
-    goToSite(ptrLnk->getLinkDestination().to_string(), true);
+
+    if(links.size() > linkToFollow-1 && linkToFollow-1 > 0) {
+        std::size_t pos = links[linkToFollow-1];
+        if(lines.size() > pos && pos > 0) {
+            Line* ptr = lines[pos];
+            Link* ptrLnk = dynamic_cast<Link*>(ptr);
+            goToSite(ptrLnk->getLinkDestination().to_string(), true);
+        }
+    }
+
 }
 
 void Browser::goBack() {
-    previousIdx -= 1;
-    int prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
-    while(!(prSC >= 20 && prSC <= 29)) {
-        previousIdx -= 1;
-        prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
-    }
 
-    goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+    int original = previousIdx;
+
+    previousIdx -= 1;
+
+    if(siteHistory.size() > previousIdx && previousIdx >= 0) {
+
+        int prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
+        while(!(prSC >= 20 && prSC <= 29)) {
+            previousIdx -= 1;
+            if(siteHistory.size() > previousIdx && previousIdx >= 0) {
+                prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
+            } else {
+                previousIdx = original;
+                return;
+            }
+        }
+
+        goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+
+    } else {
+        previousIdx = original;
+    }
 }
 
 void Browser::goForward() {
+
+    int original = previousIdx;
+
     previousIdx += 1;
 
-    int prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
-    while(!(prSC >= 20 && prSC <= 29)) {
-        previousIdx += 1;
-        prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
-    }
+    if(siteHistory.size() > previousIdx && previousIdx >= 0) {
+        int prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
+        while(!(prSC >= 20 && prSC <= 29)) {
+            previousIdx += 1;
+            if(siteHistory.size() > previousIdx && previousIdx >= 0) {
+                prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
+            } else {
+                previousIdx = original;
+                return;
+            }
+        }
 
-    goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+        goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+    } else {
+        previousIdx = original;
+    }
 }

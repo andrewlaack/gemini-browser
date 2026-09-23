@@ -70,7 +70,7 @@ TEST_CASE("Send basic gemini requests") {
     auto ln = Link{"=> gemini://laack.co"};
     Site* s = client.fetchSite(ln);
     REQUIRE(s->getStatusCode() == 20);
-    REQUIRE(s->getHeader() == "20 text/gemini;lang=en-US\r\n");
+    REQUIRE(s->getHeader() == "20 text/gemini;lang=en-US");
     delete s;
 }
 

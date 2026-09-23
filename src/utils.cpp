@@ -7,7 +7,6 @@
 #include <fstream>
 #include <iomanip>
 #include <ios>
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -90,4 +89,17 @@ std::string urlEncode(const std::string& value) {
     }
 
     return escaped.str();
+}
+
+std::string getNewTab() {
+    std::string st = 
+        "# New Tab\n"
+        "\n"
+        "This is a new tab. We have a few keybindings around here:\n"
+        "\n"
+        "* b -> back a page\n"
+        "* f -> forward a page\n"
+        "* o -> show url entry / link selection\n"
+        ;
+    return st;
 }

@@ -1,5 +1,5 @@
 #include "../include/site.hpp"
-#include <iostream>
+#include <algorithm>
 #include <string>
 
 Site::Site(std::string header, std::string body) {
@@ -21,6 +21,7 @@ uint32_t Site::getStatusCode() {
 
 std::string Site::getMeta() {
     std::string meta = header.substr(3);
+    std::replace(meta.begin(), meta.end(), '\n', ' ');
     return meta;
 }
 

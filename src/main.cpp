@@ -37,10 +37,10 @@ struct DrawState {
     int y;
     std::vector<std::pair<std::string, int>> strLs;
     bool handleInput;
-    bool handleLinkFollow;
+    bool handleOpenOther;
     bool handleRedirect;
     std::string redirInput;
-    std::string linkInput;
+    std::string openOtherInput;
     std::string userInput;
 };
 
@@ -50,25 +50,9 @@ void draw(DrawState ds) {
     move(0,0);
     clear();
 
-    if(ds.handleInput) {
-        addstr("input: ");
-        addstr(ds.userInput.c_str());
-    } else if (ds.handleRedirect) {
+    if (ds.handleRedirect) {
         addstr("Follow redirect (y/n): ");
         addstr(ds.redirInput.c_str());
-    } else if (ds.handleLinkFollow) {
-        for(int i = ds.y;i-ds.y+1 < LINES && i < ds.strLs.size(); ++i) {
-            move(i - ds.y, 0);
-            attron(COLOR_PAIR(ds.strLs[i].second + 1));
-            addstr(ds.strLs[i].first.c_str());
-            attroff(COLOR_PAIR(ds.strLs[i].second + 1));
-        }
-
-        move(LINES-1, 0);
-        addstr("Following: ");
-        addstr(ds.linkInput.c_str());
-
-
     } else {
         for(int i = ds.y;i-ds.y+1 < LINES && i < ds.strLs.size(); ++i) {
             move(i - ds.y, 0);
@@ -77,41 +61,84 @@ void draw(DrawState ds) {
             attroff(COLOR_PAIR(ds.strLs[i].second + 1));
         }
     }
+
+    if(ds.handleInput) {
+        move(LINES/2-1, COLS/4);
+        for(int i = 0; i < COLS/2; ++i) {
+            addstr("-");
+        }
+        move(LINES/2, COLS/4);
+        addstr("input: ");
+        addstr(ds.userInput.c_str());
+
+        move(LINES/2 + 1, COLS/4);
+        for(int i = 0; i < COLS/2; ++i) {
+            addstr("-");
+        }
+    }
+
+    if (ds.handleOpenOther) {
+        move(LINES/2-1, COLS/4);
+        for(int i = 0; i < COLS/2; ++i) {
+            addstr("-");
+        }
+        move(LINES/2, COLS/4);
+        addstr("Destination / Link Number: ");
+        addstr(ds.openOtherInput.c_str());
+
+        move(LINES/2 + 1, COLS/4);
+        for(int i = 0; i < COLS/2; ++i) {
+            addstr("-");
+        }
+    }
+
+    refresh();
+
 }
 
 int lowestPos(std::vector<std::pair<std::string, int>>& strLs) {
     return strLs.size() - LINES;
 }
 
-int linkHandler(DrawState ds) {
+std::string openPageHandler(DrawState ds) {
 
-    ds.handleLinkFollow = true;
+    ds.handleOpenOther = true;
     draw(ds);
+    std::string acc = "";
 
-    int acc = 0;
-    int num = 0;
-    int itr = 0;
-
-    while(num!=-1) {
+    while(true) {
         int sel = getch();
-        num = (sel - 0x30);
+
+        if(sel == KEY_BACKSPACE) {
+            if(acc.size() > 0) {
+                acc = acc.substr(0,acc.size() - 1);
+            }
+            ds.openOtherInput = acc;
+            draw(ds);
+            continue;
+        }
+
+        if(sel ==  27) {
+            acc = "";
+            break;
+        }
 
         if(sel == '\n' || sel == KEY_ENTER) {
-            num = -1;
-            continue;
+            break;
         }
 
-        if(num > 9 || num < 0) {
-            continue;
-        }
-        acc = (acc * 10) + num;
-        itr += 1;
+        acc += std::string {(char)sel};
 
-        ds.linkInput = std::to_string(acc);
+        ds.openOtherInput = acc;
         draw(ds);
 
     }
-    ds.handleLinkFollow = false;
+
+    ds.openOtherInput = acc;
+    ds.handleOpenOther = false;
+    draw(ds);
+
+
 
     return acc;
 }
@@ -125,6 +152,7 @@ Direction handleRedir(DrawState ds) {
 
     ds.handleRedirect = true;
     ds.redirInput = "";
+    draw(ds);
 
     while(true) {
         int input = getch();
@@ -144,6 +172,7 @@ Direction handleRedir(DrawState ds) {
 }
 
 std::string handleUserInput(DrawState ds) {
+
     ds.handleInput = true;
     draw(ds);
     std::string acc = "";
@@ -182,6 +211,7 @@ int main(int argc, char** argv) {
     DrawState ds {};
 
     initscr();
+    set_escdelay(25);
     noecho(); // don't echo user inputs
     cbreak(); // make C-c and C-z work
     curs_set(0); // hide cursor
@@ -192,10 +222,12 @@ int main(int argc, char** argv) {
     use_default_colors();
     initColors();
 
+    b.goToSite("about:newtab",true);
+
     if(argc > 1) {
         b.goToSite(argv[1],true);
     } else {
-        b.goToSite("gemini://tlgs.one/search/2?test",true);
+        b.goToSite("gemini://tlgs.one",true);
     }
 
     auto current = b.renderSite();
@@ -231,14 +263,21 @@ int main(int argc, char** argv) {
 
             current = b.renderSite();
             removeNonAscii(current);
-        } else if(input == ' ') {
-            int linkToFollow = linkHandler(ds);
-            if(linkToFollow != -1) {
-                b.followLinkNumber(linkToFollow);
+        } else if(input == 'o') {
+            std::string locationToGo = openPageHandler(ds);
+            
+            // TODO: Check if this is an int and if it is try to use that link.
+            // if it's not, then try to go to domain (should consider having a default search engine too.)
+
+            try {
+                b.followLinkNumber(std::stoi(locationToGo));
+            } catch (...) {
+                if(locationToGo != "") {
+                    b.goToSite(locationToGo, true);
+                }
             }
 
         }
-
 
         if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
             std::string inputQuery = handleUserInput(ds);
@@ -265,10 +304,7 @@ int main(int argc, char** argv) {
         y = std::max(0,std::min(y,lowestPos(current)));
         ds.y = y;
         ds.strLs = current;
-
         draw(ds);
-
-
         refresh();
         input = getch();
     }
