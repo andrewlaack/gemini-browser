@@ -1,4 +1,6 @@
 #include "../include/utils.hpp"
+#include "../include/list-item.hpp"
+#include "../include/quote.hpp"
 #include "../include/heading.hpp"
 #include "../include/link.hpp"
 #include "../include/format-switch.hpp"
@@ -93,8 +95,19 @@ Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount, boo
         if(input.substr(0,1) == "#") {
             Heading* hd = new Heading{input};
             return hd;
-        return new Plaintext{input};
         }
+
+        if(input.substr(0,1) == ">") {
+            Quote* qt= new Quote{input};
+            return qt;
+        }
+        if(input.substr(0,1) == "*") {
+            ListItem* li= new ListItem{input};
+            return li;
+        }
+
+
+        return new Plaintext{input};
     } else {
         return new Preformatted{input};
     }

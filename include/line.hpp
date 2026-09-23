@@ -10,7 +10,9 @@ enum LineType {
     H2,
     H3,
     FORMAT_SWITCH,
-    PREFORMATTED
+    PREFORMATTED,
+    QUOTE,
+    LIST_ITEM
 };
 
 class Line {

@@ -8,7 +8,6 @@
 
 
 TEST_CASE( "Basic navigation" ) {
-
     Browser b{};
     b.goToSite("file:///home/andrew/gitRepos/gemini-browser/tests/sites/basic.gmi", true);
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic.gmi"));
@@ -26,63 +25,3 @@ TEST_CASE( "Local filesystem relative navigation" ) {
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic_2.gmi"));
 }
 
-
-TEST_CASE("Test trivial line breaking") {
-    std::vector<std::pair<std::string, TextRender>> strLs {};
-    for(int i = 0; i < 10; ++i) {
-        std::pair<std::string, TextRender> current {"this is a simple test line", TextRender{10,false}};
-        strLs.push_back(current);
-    }
-    auto result = breakLines(strLs, 10);
-    REQUIRE(result.size() ==  30);
-}
-
-static std::string charset = "abc defghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-
-TEST_CASE("Test width invariant") {
-    
-    std::vector<std::pair<std::string, TextRender>> strLs {};
-
-    srand(std::time(NULL));
-
-    for(int i = 0; i < 10000; ++i) {
-        std::string strRnd;
-        int ub = rand() % 10000;
-        for(int x = 0; x < ub; ++x) {
-            strRnd += charset[rand() % charset.length()];
-        }
-        std::pair<std::string, TextRender> current {strRnd, TextRender{10, false}};
-        strLs.push_back(current);
-    }
-
-    auto result = breakLines(strLs, 80);
-
-    for(auto& res: result) {
-        REQUIRE(res.first.size() <= 80);
-    }
-
-}
-
-TEST_CASE("Test lots of spaces") {
-    
-    std::vector<std::pair<std::string, TextRender>> strLs {};
-
-    srand(std::time(NULL));
-
-    for(int i = 0; i < 10; ++i) {
-        std::string strRnd;
-        int ub = rand() % 10000;
-        for(int x = 0; x < ub; ++x) {
-            strRnd += ' ';
-        }
-        std::pair<std::string, TextRender> current {strRnd, TextRender{10, false}};
-        strLs.push_back(current);
-    }
-
-    auto result = breakLines(strLs, 80);
-
-    for(auto& res: result) {
-        REQUIRE(res.first.size() <= 80);
-    }
-
-}

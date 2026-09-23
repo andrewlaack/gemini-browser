@@ -14,7 +14,7 @@ int Preformatted::getColor() {
 }
 
 LineType Preformatted::type() {
-    return PLAINTEXT;
+    return PREFORMATTED;
 }
 
 bool Preformatted::isBold() {
