@@ -1,4 +1,5 @@
 #include "../include/link.hpp"
+#include <iostream>
 #include <optional>
 #include <string>
 #include "../include/utils.hpp"
@@ -69,9 +70,6 @@ uri Link::parseDestination(std::string destination, std::optional<uri> prior) {
                 destination = base + path.substr(0, path.rfind('/') + 1) + destination;
             }
         } 
-        else {
-            destination = "file://" + destination; // TODO: this should only be done in the context of starting...
-        }
     }
     try {
     return uri{destination};

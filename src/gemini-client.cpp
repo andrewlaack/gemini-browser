@@ -1,3 +1,5 @@
+#include <iostream>
+#include <stdexcept>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include "../include/gemini-client.hpp"
@@ -83,17 +85,45 @@ Site* GeminiClient::fetchSite(Link link) {
             return unreach;
         }
     } else if (isPrefixed(destination, "file://")){ // TODO: This seems wrong; it should probably be fullpath with that prefix.
-        destination = destination.substr(7, destination.size() - 7);
+
+        // TODO: this is messy and perhaps not necessary
+        
+        std::string rest = destination.substr(7);
+        std::string host;
+        std::string path;
+
+        std::size_t slash = rest.find('/');
+        if (slash != std::string::npos) {
+            host = rest.substr(0, slash);
+            path = rest.substr(slash);
+        } else {
+            host = rest;
+            path = "";
+        }
+
+        if (host.empty()) {
+            host = "localhost";
+        }
+
         std::string fileStr = "";
+
+        std::string fsPath;
+
+        if(host == "localhost") {
+            fsPath = path;
+        }  else {
+            throw std::invalid_argument("The requested file appears to exist on another system.");
+        }
+
         try {
-            fileStr = readFileToString(destination);
+            fileStr = readFileToString(fsPath);
         } catch (FileReadError e ) {
-            return new Site {"51 \r\n", ""};
+            return new Site {"51 file not found", ""};
         }
         // TODO: how should I discern file types?
-        return new Site {"20 text/gemini\r\n", fileStr};
+        return new Site {"20 text/gemini", fileStr};
     } else if(isPrefixed(destination, "about:")){
-        return new Site {"20 text/gemini\r\n", getNewTab()};
+        return new Site {"20 text/gemini", getNewTab()};
     } else {
         throw NotImplemented();
     }

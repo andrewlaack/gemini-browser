@@ -4,9 +4,11 @@
 #include "../include/plaintext.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <ios>
+#include <linux/limits.h>
 #include <sstream>
 #include <string>
 #include <vector>

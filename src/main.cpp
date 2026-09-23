@@ -1,7 +1,9 @@
 #include "../include/browser.hpp"
+#include "../include/utils.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <filesystem>
 #include <iostream>
 #include <ncurses.h>
 #include <string>
@@ -250,7 +252,9 @@ int main(int argc, char** argv) {
     b.goToSite("about:newtab",true);
 
     if(argc > 1) {
-        b.goToSite(argv[1],true);
+        // TODO: This should have tests.
+        std::string path = "file:///" + std::filesystem::current_path().string() + "/" + argv[1];
+        b.goToSite(path,true);
     } else {
         b.goToSite("gemini://tlgs.one",true);
     }

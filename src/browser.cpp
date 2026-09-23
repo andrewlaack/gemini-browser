@@ -1,4 +1,7 @@
 #include "../include/browser.hpp"
+#include <iostream>
+#include <stdexcept>
+#include <string>
 #include <unistd.h>
 #include "../include/site.hpp"
 #include "../include/gemini-client.hpp"
@@ -31,10 +34,17 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
         destination = new Link{url,prior->getLinkDestination()};
     }
 
+    std::string urlString = destination->getLinkDestination().to_string();
+    std::string scheme  = destination->getLinkDestination().get_scheme();
+    if(scheme != "gemini" && scheme != "file" && scheme != "about") { //  TODO: Should  I use about or just a fs file?
+        openUrl(urlString);
+        delete destination;
+        return;
+    }
+
 
     Site* site = nullptr;
 
-    std::string urlString = destination->getLinkDestination().to_string();
     if(urlString.find("gemini://") != -1 && !refresh) {
         std::optional<Site> cachedSite = cache->getSite(urlString);
         if(cachedSite != std::nullopt) {
@@ -45,7 +55,6 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     if(site == nullptr) {
         site = client.fetchSite(*destination);
     }
-
 
     if(site == nullptr || site->getUnreachable()) {
         if(site != nullptr) {
@@ -143,16 +152,12 @@ std::optional<uri> Browser::getPriorUri() {
 }
 
 void Browser::followLinkNumber(int linkToFollow) {
-    if(links.size() > linkToFollow-1 && linkToFollow-1 > 0) {
+    if(links.size() > linkToFollow-1 && linkToFollow-1 >= 0) {
         std::size_t pos = links[linkToFollow-1];
-        if(lines.size() > pos && pos > 0) {
+        if(lines.size() > pos && pos >= 0) {
             Line* ptr = lines[pos];
             Link* ptrLnk = dynamic_cast<Link*>(ptr);
-            if(ptrLnk->getLinkDestination().to_string().find("gemini://") == -1) {
-                openUrl(ptrLnk->getLinkDestination().to_string());
-            } else {
-                goToSite(ptrLnk->getLinkDestination().to_string(), true);
-            }
+            goToSite(ptrLnk->getLinkDestination().to_string(), true);
         }
     }
 
