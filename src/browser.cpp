@@ -60,6 +60,7 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
         if(site != nullptr) {
             delete site;
         }
+        previousIdx += 1;
         goBack();
         return;
     }
