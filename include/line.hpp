@@ -13,4 +13,5 @@ class Line {
         virtual std::string textToDraw() = 0;
         virtual int getColor() = 0;
         virtual LineType type() = 0;
+        virtual ~Line() = default;
 };

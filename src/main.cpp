@@ -1,4 +1,5 @@
 #include "../include/browser.hpp"
+#include <malloc.h>
 #include "../include/gemini-client.hpp"
 #include "../include/utils.hpp"
 #include <algorithm>
@@ -13,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+const int SITE_CACHE_LIMIT = 10;
 const int THREAD_NUM = 4;
 std::vector<std::thread> threads(THREAD_NUM);
 std::vector<std::atomic<bool>> done(THREAD_NUM);
@@ -21,7 +23,8 @@ std::vector<std::atomic<bool>> done(THREAD_NUM);
 // bc ppl use lots of emojis on gemini sites.
 
 void aggressiveCaching(Browser* bPtr, std::vector<Link> targets, int threadIdx) {
-    for(auto& target : targets) {
+    for(int i =  0 ; i < targets.size() && i < SITE_CACHE_LIMIT; ++i) {
+        auto& target = targets[i];
         bPtr->justCacheSite(target);
     }
     done[threadIdx] = true;
@@ -284,9 +287,6 @@ int main(int argc, char** argv) {
 
     int input = 0;
     int y = 0;
-    int x = 0;
-
-    std::thread cacheThread;
 
     // this is the main loop.
 
@@ -360,6 +360,9 @@ int main(int argc, char** argv) {
             } else {
                 b.goToSite(b.getCurrentSite()->getMeta(),true);
             }
+            current = b.renderSite();
+            removeNonAscii(current);
+            current = breakLines(current,COLS);
 
         } else {
             current = b.renderSite();
@@ -398,4 +401,6 @@ int main(int argc, char** argv) {
             t.join();
         }
     }
+
+    delete bPtr;
 }

@@ -1,6 +1,4 @@
 #include "../include/browser.hpp"
-#include <iostream>
-#include <stdexcept>
 #include <string>
 #include <unistd.h>
 #include "../include/site.hpp"
@@ -11,6 +9,24 @@
 #include <optional>
 #include <utility>
 #include <vector>
+
+
+Site* Browser::findInCacheAndPromoteIfRelevant(std::string& urlString) {
+        Site*  site = nullptr;
+        std::optional<Site> cachedSite = visitedCache->getSite(urlString);
+        if(cachedSite != std::nullopt) {
+            site = new Site(*cachedSite);
+        }
+        if(site == nullptr) {
+            std::optional<Site> cached = preFetchCache->getSite(urlString);
+            if(cached != std::nullopt) {
+                site = new Site(*cached);
+                visitedCache->addSite(urlString, *cached);
+            }
+        }
+
+        return site;
+}
 
 void Browser::refresh() {
     goToSite(getPriorUri().value().to_string(), false, true);
@@ -46,10 +62,7 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     Site* site = nullptr;
 
     if(urlString.find("gemini://") != -1 && !refresh) {
-        std::optional<Site> cachedSite = cache->getSite(urlString);
-        if(cachedSite != std::nullopt) {
-            site = new Site(*cachedSite);
-        }
+        site = findInCacheAndPromoteIfRelevant(urlString);
     }
     
     if(site == nullptr) {
@@ -61,6 +74,7 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
             delete site;
         }
         previousIdx += 1;
+        delete destination;
         goBack();
         return;
     }
@@ -80,33 +94,42 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     currentSite = site;
 
     if(urlString.find("gemini://") != -1) {
-        cache->addSite(urlString, *site);
+        visitedCache->addSite(urlString, *site);
+    }
+
+    for(auto* line: lines) {
+        delete line;
     }
 
     lines = toLines(site);
+
     setLinksOfCurrentLines();
     previousStatusCodes[destination->getLinkDestination().to_string()] = site->getStatusCode();
+    if (!addToHistory) {
+        delete destination;
+    }
 }
 
 void Browser::justCacheSite(Link link) {
     auto client = GeminiClient{};
 
-
     std::string urlString = link.getLinkDestination().to_string();
+
+    if (visitedCache->getSite(urlString) || preFetchCache->getSite(urlString)) {
+        return;
+    }
 
     Site* site = nullptr;
 
-
     if(urlString.find("gemini://") != -1) {
-        std::optional<Site> cachedSite = cache->getSite(urlString);
-        if(cachedSite == std::nullopt) {
-            site = client.fetchSite(link);
-        }
+        site = client.fetchSite(link);
     } 
 
     if(site != nullptr) {
-        cache->addSite(urlString, *site, NOT_IMPORTANT);
+        preFetchCache->addSite(urlString, *site);
+        delete site;
     }
+
     return;
 }
 
@@ -142,13 +165,23 @@ std::vector<Line*> Browser::toLines(Site* site) {
 
 Browser::Browser() {
     currentSite = nullptr;
-    cache = new Cache{};
+    visitedCache = new Cache{};
+    preFetchCache = new Cache{};
+
 }
 
 // TODO: SHould add more stuff here too, like the links stuff.
 Browser::~Browser() {
-    if (cache != nullptr) {
-        delete cache;
+    delete visitedCache;
+    delete preFetchCache;
+    delete currentSite;
+
+    for (auto* line : lines) {
+        delete line;
+    }
+
+    for (auto* link : siteHistory) {
+        delete link;
     }
 }
 

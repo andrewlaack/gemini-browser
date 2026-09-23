@@ -13,11 +13,13 @@ class Browser {
         std::unordered_map<std::string, int> previousStatusCodes;
         std::vector<Link*> siteHistory;
         int previousIdx = -1;
-        Cache* cache;
+        Cache* visitedCache;
+        Cache* preFetchCache;
         Site* currentSite;
         std::vector<Line*> lines;
         std::vector<std::size_t> links; // these point to line indices
         void setLinksOfCurrentLines();
+        Site* findInCacheAndPromoteIfRelevant(std::string& urlString);
     public:
         Browser();
         ~Browser();

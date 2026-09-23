@@ -8,7 +8,6 @@
 class Site{
     private:
         std::string body;
-        std::vector<Line*> lines; 
         std::string header;
         bool unreachable = false;
     public:
