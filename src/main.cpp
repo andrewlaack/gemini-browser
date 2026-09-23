@@ -27,6 +27,8 @@ void removeNonAscii(std::vector<std::pair<std::string, int>>& strLs) {
     return;
 }
 
+
+
 void initColors() {
     for (int c = 0; c < COLORS; ++c) {
         init_pair(c + 1, c, -1);
@@ -44,52 +46,70 @@ struct DrawState {
     std::string userInput;
 };
 
+void drawInputBox(std::string text, std::string userInput) {
+
+    move(LINES/2-1, COLS/4);
+
+
+    attron(COLOR_PAIR(COLOR_CYAN+1));
+    for(int i = 0; i < COLS/2; ++i) {
+        addstr("-");
+    }
+
+    move(LINES/2 + 1, COLS/4);
+    for(int i = 0; i < COLS/2; ++i) {
+        addstr("-");
+    }
+    attroff(COLOR_PAIR(COLOR_CYAN+1));
+
+    int textSize = text.size();
+    int userInputSize = userInput.size();
+    int width = COLS/2;
+
+    std::string userTextToRender = userInput;
+
+    int delta = width - (textSize + userInputSize);
+
+
+    if(delta < 0) {
+        userTextToRender = userInput.substr(delta*-1, userInput.size());
+    } else {
+        while(delta != 0) {
+            userTextToRender.append(" "); // this makes sure the background doesn't leak through.
+            delta -= 1;
+        }
+    }
+
+
+    move(LINES/2, COLS/4);
+    addstr(text.c_str());
+    addstr(userTextToRender.c_str());
+
+}
+
 
 void draw(DrawState ds) {
 
     move(0,0);
     clear();
 
+    for(int i = ds.y;i-ds.y+1 < LINES && i < ds.strLs.size(); ++i) {
+        move(i - ds.y, 0);
+        attron(COLOR_PAIR(ds.strLs[i].second + 1));
+        addstr(ds.strLs[i].first.c_str());
+        attroff(COLOR_PAIR(ds.strLs[i].second + 1));
+    }
+
     if (ds.handleRedirect) {
-        addstr("Follow redirect (y/n): ");
-        addstr(ds.redirInput.c_str());
-    } else {
-        for(int i = ds.y;i-ds.y+1 < LINES && i < ds.strLs.size(); ++i) {
-            move(i - ds.y, 0);
-            attron(COLOR_PAIR(ds.strLs[i].second + 1));
-            addstr(ds.strLs[i].first.c_str());
-            attroff(COLOR_PAIR(ds.strLs[i].second + 1));
-        }
+        drawInputBox("Follow redirect (y/n): ", ds.redirInput);
     }
 
     if(ds.handleInput) {
-        move(LINES/2-1, COLS/4);
-        for(int i = 0; i < COLS/2; ++i) {
-            addstr("-");
-        }
-        move(LINES/2, COLS/4);
-        addstr("input: ");
-        addstr(ds.userInput.c_str());
-
-        move(LINES/2 + 1, COLS/4);
-        for(int i = 0; i < COLS/2; ++i) {
-            addstr("-");
-        }
+        drawInputBox("input: ", ds.userInput);
     }
 
     if (ds.handleOpenOther) {
-        move(LINES/2-1, COLS/4);
-        for(int i = 0; i < COLS/2; ++i) {
-            addstr("-");
-        }
-        move(LINES/2, COLS/4);
-        addstr("Destination / Link Number: ");
-        addstr(ds.openOtherInput.c_str());
-
-        move(LINES/2 + 1, COLS/4);
-        for(int i = 0; i < COLS/2; ++i) {
-            addstr("-");
-        }
+        drawInputBox("Destination / Link Number: ", ds.openOtherInput);
     }
 
     refresh();
@@ -181,6 +201,11 @@ std::string handleUserInput(DrawState ds) {
 
         int sel = getch();
         if(sel == '\n' || sel == KEY_ENTER) {
+            break;
+        }
+        if(sel ==  27) {
+            acc = "";
+            ds.userInput = acc;
             break;
         }
         if(sel == KEY_BACKSPACE) {
