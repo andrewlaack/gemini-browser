@@ -4,7 +4,7 @@ A gemini browser, written in C++.
 
 Requirements
 ============
-C++ compiler, make
+C++ compiler, make, openssl
 
 
 Installation

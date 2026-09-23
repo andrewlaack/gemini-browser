@@ -13,6 +13,7 @@
 // we do this because this is built against ncurses, would be nice to do away w/ this
 // bc ppl use lots of emojis on gemini sites.
 
+
 void removeNonAscii(std::vector<std::pair<std::string, int>>& strLs) {
 
     for(std::size_t i = 0; i < strLs.size(); ++i) {
@@ -51,7 +52,6 @@ struct DrawState {
 void drawInputBox(std::string text, std::string userInput) {
 
     move(LINES/2-1, COLS/4);
-
 
     attron(COLOR_PAIR(COLOR_CYAN+1));
     for(int i = 0; i < COLS/2; ++i) {
@@ -261,6 +261,8 @@ int main(int argc, char** argv) {
 
     auto current = b.renderSite();
     removeNonAscii(current);
+    current = breakLines(current,COLS);
+
 
     int input = 0;
     int y = 0;
@@ -288,12 +290,16 @@ int main(int argc, char** argv) {
 
             current = b.renderSite();
             removeNonAscii(current);
+            current = breakLines(current,COLS);
+
 
         } else if(input == 'b') {
             b.goBack();
 
             current = b.renderSite();
             removeNonAscii(current);
+            current = breakLines(current,COLS);
+
         } else if(input == 'o') {
             std::string locationToGo = openPageHandler(ds);
             
@@ -319,6 +325,7 @@ int main(int argc, char** argv) {
                 b.goToSite(inputQuery,true);
                 current = b.renderSite();
                 removeNonAscii(current);
+                current = breakLines(current,COLS);
             }
 
         } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39){
@@ -332,6 +339,7 @@ int main(int argc, char** argv) {
         } else {
             current = b.renderSite();
             removeNonAscii(current);
+            current = breakLines(current,COLS);
         }
 
         y = std::max(0,y);

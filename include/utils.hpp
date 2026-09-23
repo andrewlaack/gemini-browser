@@ -14,3 +14,4 @@ Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount);
 std::string urlEncode(const std::string& value);
 std::string getNewTab();
 void openUrl(const std::string& url);
+std::vector<std::pair<std::string, int>> breakLines(std::vector<std::pair<std::string, int>>& strLs, int width);

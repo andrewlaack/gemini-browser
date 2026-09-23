@@ -8,9 +8,11 @@
 #include <fstream>
 #include <iomanip>
 #include <ios>
+#include <iostream>
 #include <linux/limits.h>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 #include <spawn.h>
 #include <sys/wait.h>
@@ -116,4 +118,47 @@ std::string getNewTab() {
         "* o -> show url entry / link selection\n"
         ;
     return st;
+}
+
+// WIDTH IS INCLUSIVE
+std::vector<std::pair<std::string, int>> breakLines(std::vector<std::pair<std::string, int>>& strLs, int width) {
+
+    std::vector<std::pair<std::string, int>> res {};
+
+    for(std::size_t i = 0;  i < strLs.size(); ++i) {
+
+        std::string cstr = strLs[i].first;
+        std::string current = "";
+        int lastSpace = -1;
+
+        for(int x = 0; x < cstr.size(); ++x) {
+            if(current.size() < width) {
+                current.push_back(cstr[x]);
+                if(cstr[x] == ' ') {
+                    lastSpace = current.size()-1;
+                }
+            } else {
+
+                std::string toPush = current;
+
+                if(lastSpace != -1) {
+                    toPush = current.substr(0,lastSpace+1);
+                    current = current.substr(lastSpace+1);
+                    current.push_back(cstr[x]);
+                } else {
+                    current = "";
+                    current.push_back(cstr[x]);
+                }
+
+                res.push_back(std::pair<std::string,int> {toPush,strLs[i].second});
+                lastSpace = (cstr[x] == ' ') ? current.size() - 1 : -1;
+            }
+        }
+        if(current.size() > 0) {
+            res.push_back(std::pair<std::string,int> {current,strLs[i].second});
+            current = "";
+        }
+    }
+
+    return res;
 }
