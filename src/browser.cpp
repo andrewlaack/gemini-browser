@@ -7,7 +7,11 @@
 #include <utility>
 #include <vector>
 
-void Browser::goToSite(std::string url, bool addToHistory) {
+void Browser::refresh() {
+    goToSite(getPriorUri().value().to_string(), false, true);
+}
+
+void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
 
     Link* prior = nullptr;
 
@@ -25,7 +29,21 @@ void Browser::goToSite(std::string url, bool addToHistory) {
         destination = new Link{url,prior->getLinkDestination()};
     }
 
-    Site* site = client.fetchSite(*destination);
+
+    Site* site = nullptr;
+
+    std::string urlString = destination->getLinkDestination().to_string();
+    if(urlString.find("gemini://") != -1 && !refresh) {
+        std::optional<Site> cachedSite = cache->getSite(urlString);
+        if(cachedSite != std::nullopt) {
+            site = new Site(*cachedSite);
+        }
+    }
+    
+    if(site == nullptr) {
+        site = client.fetchSite(*destination);
+    }
+
 
     if(site == nullptr || site->getUnreachable()) {
         if(site != nullptr) {
@@ -48,6 +66,11 @@ void Browser::goToSite(std::string url, bool addToHistory) {
         delete currentSite;
     }
     currentSite = site;
+
+    if(urlString.find("gemini://") != -1) {
+        cache->addSite(urlString, *site);
+    }
+
     lines = toLines(site);
     setLinksOfCurrentLines();
     previousStatusCodes[destination->getLinkDestination().to_string()] = site->getStatusCode();
@@ -84,7 +107,16 @@ std::vector<Line*> Browser::toLines(Site* site) {
 
 Browser::Browser() {
     currentSite = nullptr;
+    cache = new Cache{};
 }
+
+// TODO: SHould add more stuff here too, like the links stuff.
+Browser::~Browser() {
+    if (cache != nullptr) {
+        delete cache;
+    }
+}
+
 
 Site* Browser::getCurrentSite() {
     return currentSite;

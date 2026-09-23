@@ -277,6 +277,8 @@ int main(int argc, char** argv) {
             y += LINES / 2;
         } else if (input == 0x15) {
             y -= LINES / 2;
+        } else if (input == 'r'){
+            b.refresh();
         } else if(input == 'f') {
             b.goForward();
 

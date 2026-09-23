@@ -33,4 +33,3 @@ void Site::setUnreachable() {
 bool Site::getUnreachable() {
     return unreachable;
 }
-

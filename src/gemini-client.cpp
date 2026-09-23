@@ -71,7 +71,6 @@ Site* GeminiClient::getNetworkedSite(Link link) {
 
 
 Site* GeminiClient::fetchSite(Link link) {
-
     std::string destination = link.getLinkDestination().to_string();
 
     // TODO: Actually handle uris
