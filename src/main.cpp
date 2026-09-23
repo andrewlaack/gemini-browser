@@ -1,18 +1,31 @@
 #include "../include/browser.hpp"
+#include "../include/gemini-client.hpp"
 #include "../include/utils.hpp"
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cstddef>
 #include <filesystem>
 #include <iostream>
 #include <ncurses.h>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
+
+const int THREAD_NUM = 4;
+std::vector<std::thread> threads(THREAD_NUM);
+std::vector<std::atomic<bool>> done(THREAD_NUM);
 
 // we do this because this is built against ncurses, would be nice to do away w/ this
 // bc ppl use lots of emojis on gemini sites.
 
+void aggressiveCaching(Browser* bPtr, std::vector<Link> targets, int threadIdx) {
+    for(auto& target : targets) {
+        bPtr->justCacheSite(target);
+    }
+    done[threadIdx] = true;
+}
 
 void removeNonAscii(std::vector<std::pair<std::string, int>>& strLs) {
 
@@ -233,7 +246,12 @@ std::string handleUserInput(DrawState ds) {
 
 int main(int argc, char** argv) {
 
-    Browser b{};
+    for (auto& d : done) {
+        d = true;
+    }
+
+    Browser* bPtr = new Browser{};
+    Browser& b = *bPtr;
 
     DrawState ds {};
 
@@ -267,6 +285,8 @@ int main(int argc, char** argv) {
     int input = 0;
     int y = 0;
     int x = 0;
+
+    std::thread cacheThread;
 
     // this is the main loop.
 
@@ -326,6 +346,11 @@ int main(int argc, char** argv) {
                 current = b.renderSite();
                 removeNonAscii(current);
                 current = breakLines(current,COLS);
+            } else {
+                b.goBack();
+                current = b.renderSite();
+                removeNonAscii(current);
+                current = breakLines(current,COLS);
             }
 
         } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39){
@@ -348,8 +373,29 @@ int main(int argc, char** argv) {
         ds.strLs = current;
         draw(ds);
         refresh();
+
+
+        bool dispatched = false;
+        for(int i = 0; i < THREAD_NUM && dispatched == false; ++i) {
+            if(done[i]) {
+                if(threads[i].joinable()) {
+                    threads[i].join();
+                }
+                auto lls = b.getLinkLines();
+                done[i] = false;
+                threads[i] = std::thread(aggressiveCaching, bPtr, lls, i);
+                dispatched = true;
+            }
+        }
+
         input = getch();
     }
 
     endwin();
+
+    for (auto& t : threads) {
+        if (t.joinable()) {
+            t.join();
+        }
+    }
 }

@@ -28,6 +28,9 @@ class Browser {
         std::vector<std::pair<std::string, int>> renderSite();
         std::vector<Line*> toLines(Site* site);
         void followLinkNumber(int linkToFollow);
+        std::vector<Link> getLinkLines();
+
+        void justCacheSite(Link link);
         void goBack();
         void goForward();
 };

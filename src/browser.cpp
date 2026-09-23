@@ -88,6 +88,29 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     previousStatusCodes[destination->getLinkDestination().to_string()] = site->getStatusCode();
 }
 
+void Browser::justCacheSite(Link link) {
+    auto client = GeminiClient{};
+
+
+    std::string urlString = link.getLinkDestination().to_string();
+
+    Site* site = nullptr;
+
+
+    if(urlString.find("gemini://") != -1) {
+        std::optional<Site> cachedSite = cache->getSite(urlString);
+        if(cachedSite == std::nullopt) {
+            site = client.fetchSite(link);
+        }
+    } 
+
+    if(site != nullptr) {
+        cache->addSite(urlString, *site, NOT_IMPORTANT);
+    }
+    return;
+}
+
+
 void Browser::setLinksOfCurrentLines() {
     links = std::vector<std::size_t> {};
     for(std::size_t i = 0; i < lines.size(); ++i) {
@@ -151,6 +174,15 @@ std::optional<uri> Browser::getPriorUri() {
     return std::nullopt;
 
 }
+
+std::vector<Link> Browser::getLinkLines() {
+    std::vector<Link> res {};
+    for(auto& ln : links) {
+        res.push_back(*dynamic_cast<Link*>(lines[ln]));
+    }
+    return res;
+}
+
 
 void Browser::followLinkNumber(int linkToFollow) {
     if(links.size() > linkToFollow-1 && linkToFollow-1 >= 0) {
