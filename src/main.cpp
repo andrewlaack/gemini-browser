@@ -300,6 +300,9 @@ int main(int argc, char** argv) {
                 b.followLinkNumber(std::stoi(locationToGo));
             } catch (...) {
                 if(locationToGo != "") {
+                    if(locationToGo.find("gemini://") == -1) {
+                        locationToGo = "gemini://" + locationToGo;
+                    }
                     b.goToSite(locationToGo, true);
                 }
             }

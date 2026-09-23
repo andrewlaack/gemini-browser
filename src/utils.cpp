@@ -10,6 +10,18 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <spawn.h>
+#include <sys/wait.h>
+
+extern char** environ;
+
+void openUrl(const std::string& url) {
+    pid_t pid;
+    char* argv[] = {(char*)"xdg-open", (char*)url.c_str(), nullptr};
+    if (posix_spawnp(&pid, "xdg-open", nullptr, nullptr, argv, environ) == 0) {
+        waitpid(pid, nullptr, 0);
+    }
+}
 
 bool isPrefixed(std::string input, std::string prefix) {
     return std::string(input).find(prefix) == 0;

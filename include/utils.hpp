@@ -13,3 +13,4 @@ std::vector<std::string> stringToList(std::string input);
 Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount);
 std::string urlEncode(const std::string& value);
 std::string getNewTab();
+void openUrl(const std::string& url);

@@ -1,8 +1,10 @@
 #include "../include/browser.hpp"
+#include <unistd.h>
 #include "../include/site.hpp"
 #include "../include/gemini-client.hpp"
 #include "../include/utils.hpp"
 #include <cstddef>
+#include <cstdlib>
 #include <optional>
 #include <utility>
 #include <vector>
@@ -141,13 +143,16 @@ std::optional<uri> Browser::getPriorUri() {
 }
 
 void Browser::followLinkNumber(int linkToFollow) {
-
     if(links.size() > linkToFollow-1 && linkToFollow-1 > 0) {
         std::size_t pos = links[linkToFollow-1];
         if(lines.size() > pos && pos > 0) {
             Line* ptr = lines[pos];
             Link* ptrLnk = dynamic_cast<Link*>(ptr);
-            goToSite(ptrLnk->getLinkDestination().to_string(), true);
+            if(ptrLnk->getLinkDestination().to_string().find("gemini://") == -1) {
+                openUrl(ptrLnk->getLinkDestination().to_string());
+            } else {
+                goToSite(ptrLnk->getLinkDestination().to_string(), true);
+            }
         }
     }
 
