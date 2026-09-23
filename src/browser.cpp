@@ -153,8 +153,12 @@ std::vector<Line*> Browser::toLines(Site* site) {
 
     int lc = 1;
 
+    bool isPreformatted = false;
     for(auto line: lines) {
-        res.push_back(lineToLine(line, getPriorUri(), lc));
+        res.push_back(lineToLine(line, getPriorUri(), lc, isPreformatted));
+        if (res[res.size()-1]->type() == FORMAT_SWITCH) {
+            isPreformatted = !isPreformatted;
+        }
         if(res[res.size() - 1]->type() == LINK) {
             lc += 1;
         }
@@ -278,3 +282,11 @@ void Browser::goForward() {
         previousIdx = original;
     }
 }
+
+Link* Browser::getCurrentLink() {
+    if(previousIdx >= 0 && previousIdx < siteHistory.size()) {
+        return this->siteHistory[previousIdx];
+    }
+    return nullptr;
+}
+

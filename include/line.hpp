@@ -5,7 +5,12 @@
 
 enum LineType {
     LINK,
-    PLAINTEXT
+    PLAINTEXT,
+    H1,
+    H2,
+    H3,
+    FORMAT_SWITCH,
+    PREFORMATTED
 };
 
 class Line {

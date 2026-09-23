@@ -1,7 +1,10 @@
 #include "../include/utils.hpp"
+#include "../include/heading.hpp"
 #include "../include/link.hpp"
+#include "../include/format-switch.hpp"
 #include "../include/errors.hpp"
 #include "../include/plaintext.hpp"
+#include "../include/preformatted.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -75,12 +78,28 @@ std::vector<std::string> stringToList(std::string input)
     return res;
 }
 
-Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount) {
-    if(input.substr(0,2) == "=>") {
-        Link* ln = new Link{input, prior, linkCount};
-        return ln;
+Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount, bool isPreformatted) {
+
+    if(input.substr(0,3) == "```") {
+        FormatSwitch* fs = new FormatSwitch{input};
+        return fs;
+    }
+
+    if(!isPreformatted) {
+        if(input.substr(0,2) == "=>") {
+            Link* ln = new Link{input, prior, linkCount};
+            return ln;
+        }
+        if(input.substr(0,1) == "#") {
+            Heading* hd = new Heading{input};
+            return hd;
+        return new Plaintext{input};
+        }
+    } else {
+        return new Preformatted{input};
     }
     return new Plaintext{input};
+
 }
 
 

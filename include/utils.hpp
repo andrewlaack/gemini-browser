@@ -10,7 +10,7 @@ std::string readFileToString(std::string filePath);
 bool isWhiteSpace(std::string& line, int idx);
 std::string truncateAfter(std::string input, char truncate);
 std::vector<std::string> stringToList(std::string input);
-Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount);
+Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount, bool isPreformatted);
 std::string urlEncode(const std::string& value);
 std::string getNewTab();
 void openUrl(const std::string& url);

@@ -55,6 +55,7 @@ void initColors() {
 }
 
 struct DrawState {
+    std::string header;
     int y;
     std::vector<std::pair<std::string, int>> strLs;
     bool handleInput;
@@ -108,11 +109,12 @@ void drawInputBox(std::string text, std::string userInput) {
 
 void draw(DrawState ds) {
 
-    move(0,0);
     clear();
+    move(0,(COLS / 2) - (ds.header.size() / 2) );
+    addstr(ds.header.c_str());
 
     for(int i = ds.y;i-ds.y+1 < LINES && i < ds.strLs.size(); ++i) {
-        move(i - ds.y, 0);
+        move(i - ds.y + 1, 0);
         attron(COLOR_PAIR(ds.strLs[i].second + 1));
         addstr(ds.strLs[i].first.c_str());
         attroff(COLOR_PAIR(ds.strLs[i].second + 1));
@@ -322,7 +324,7 @@ int main(int argc, char** argv) {
 
         } else if(input == 'o') {
             std::string locationToGo = openPageHandler(ds);
-            
+
             // TODO: Check if this is an int and if it is try to use that link.
             // if it's not, then try to go to domain (should consider having a default search engine too.)
 
@@ -330,7 +332,7 @@ int main(int argc, char** argv) {
                 b.followLinkNumber(std::stoi(locationToGo));
             } catch (...) {
                 if(locationToGo != "") {
-                    if(locationToGo.find("gemini://") == -1) {
+                    if(locationToGo.find(":") == -1) { // TODO: Is this how we which scheme was specified?
                         locationToGo = "gemini://" + locationToGo;
                     }
                     b.goToSite(locationToGo, true);
@@ -374,6 +376,13 @@ int main(int argc, char** argv) {
         y = std::max(0,std::min(y,lowestPos(current)));
         ds.y = y;
         ds.strLs = current;
+        auto* clk = b.getCurrentLink();
+        if(clk != nullptr) {
+            ds.header = clk->getLinkDestination().to_string();
+        } else {
+            ds.header = "Welcome!";
+        }
+
         draw(ds);
         refresh();
 
