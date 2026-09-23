@@ -1,5 +1,6 @@
 #include "../include/browser.hpp"
 #include <string>
+#include <thread>
 #include <unistd.h>
 #include "../include/site.hpp"
 #include "../include/gemini-client.hpp"
@@ -10,6 +11,36 @@
 #include <utility>
 #include <vector>
 
+
+void dispatch(std::vector<Link>* targets, Browser& b, int threadIdx) {
+    std::vector<Link>& refT = *targets;
+    for(int i =  0 ; i < refT.size() && i < SITE_CACHE_LIMIT; ++i) {
+        auto& target = refT[i];
+        b.justCacheSite(target);
+    }
+    b.setDone(threadIdx);
+    delete targets;
+}
+
+void Browser::setDone(int threadIdx) {
+    done[threadIdx] = true;
+}
+
+void Browser::tryCacheTargets() {
+    bool dispatched = false;
+    for(int i = 0; i < THREAD_NUM && dispatched == false; ++i) {
+        if(done[i]) {
+            if(threads[i].joinable()) {
+                threads[i].join();
+            }
+            auto* lls = getLinkLines();
+            done[i] = false;
+            threads[i] = std::thread(dispatch, lls, std::ref(*this), i);
+            dispatched = true;
+        }
+    }
+
+}
 
 Site* Browser::findInCacheAndPromoteIfRelevant(std::string& urlString) {
         Site*  site = nullptr;
@@ -108,6 +139,8 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     if (!addToHistory) {
         delete destination;
     }
+
+    tryCacheTargets();
 }
 
 void Browser::justCacheSite(Link link) {
@@ -167,15 +200,25 @@ std::vector<Line*> Browser::toLines(Site* site) {
 }
 
 
-Browser::Browser() {
+Browser::Browser() : threads(THREAD_NUM), done(THREAD_NUM) {
     currentSite = nullptr;
     visitedCache = new Cache{};
     preFetchCache = new Cache{};
+    for (auto& d : done) {
+        d = true;
+    }
 
 }
 
 // TODO: SHould add more stuff here too, like the links stuff.
 Browser::~Browser() {
+
+    for (auto& t : threads) {
+        if (t.joinable()) {
+            t.join();
+        }
+    }
+
     delete visitedCache;
     delete preFetchCache;
     delete currentSite;
@@ -212,10 +255,10 @@ std::optional<uri> Browser::getPriorUri() {
 
 }
 
-std::vector<Link> Browser::getLinkLines() {
-    std::vector<Link> res {};
+std::vector<Link>* Browser::getLinkLines() {
+    std::vector<Link>* res = new std::vector<Link> {};
     for(auto& ln : links) {
-        res.push_back(*dynamic_cast<Link*>(lines[ln]));
+        res->push_back(*dynamic_cast<Link*>(lines[ln]));
     }
     return res;
 }

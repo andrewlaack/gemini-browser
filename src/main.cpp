@@ -14,23 +14,11 @@
 #include <utility>
 #include <vector>
 
-const int SITE_CACHE_LIMIT = 10;
-const int THREAD_NUM = 4;
-std::vector<std::thread> threads(THREAD_NUM);
-std::vector<std::atomic<bool>> done(THREAD_NUM);
-
 // we do this because this is built against ncurses, would be nice to do away w/ this
 // bc ppl use lots of emojis on gemini sites.
 
-void aggressiveCaching(Browser* bPtr, std::vector<Link> targets, int threadIdx) {
-    for(int i =  0 ; i < targets.size() && i < SITE_CACHE_LIMIT; ++i) {
-        auto& target = targets[i];
-        bPtr->justCacheSite(target);
-    }
-    done[threadIdx] = true;
-}
-
 void removeNonAscii(std::vector<std::pair<std::string, TextRender>>& strLs) {
+
 
     for(std::size_t i = 0; i < strLs.size(); ++i) {
 
@@ -262,9 +250,6 @@ std::string handleUserInput(DrawState ds) {
 
 int main(int argc, char** argv) {
 
-    for (auto& d : done) {
-        d = true;
-    }
 
     Browser* bPtr = new Browser{};
     Browser& b = *bPtr;
@@ -398,29 +383,11 @@ int main(int argc, char** argv) {
         refresh();
 
 
-        bool dispatched = false;
-        for(int i = 0; i < THREAD_NUM && dispatched == false; ++i) {
-            if(done[i]) {
-                if(threads[i].joinable()) {
-                    threads[i].join();
-                }
-                auto lls = b.getLinkLines();
-                done[i] = false;
-                threads[i] = std::thread(aggressiveCaching, bPtr, lls, i);
-                dispatched = true;
-            }
-        }
 
         input = getch();
     }
 
     endwin();
-
-    for (auto& t : threads) {
-        if (t.joinable()) {
-            t.join();
-        }
-    }
 
     delete bPtr;
 }

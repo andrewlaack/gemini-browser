@@ -28,9 +28,9 @@ TEST_CASE( "Local filesystem relative navigation" ) {
 
 
 TEST_CASE("Test trivial line breaking") {
-    std::vector<std::pair<std::string, int>> strLs {};
+    std::vector<std::pair<std::string, TextRender>> strLs {};
     for(int i = 0; i < 10; ++i) {
-        std::pair<std::string, int> current {"this is a simple test line", 10};
+        std::pair<std::string, TextRender> current {"this is a simple test line", TextRender{10,false}};
         strLs.push_back(current);
     }
     auto result = breakLines(strLs, 10);
@@ -41,7 +41,7 @@ static std::string charset = "abc defghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUV
 
 TEST_CASE("Test width invariant") {
     
-    std::vector<std::pair<std::string, int>> strLs {};
+    std::vector<std::pair<std::string, TextRender>> strLs {};
 
     srand(std::time(NULL));
 
@@ -51,7 +51,7 @@ TEST_CASE("Test width invariant") {
         for(int x = 0; x < ub; ++x) {
             strRnd += charset[rand() % charset.length()];
         }
-        std::pair<std::string, int> current {strRnd, 10};
+        std::pair<std::string, TextRender> current {strRnd, TextRender{10, false}};
         strLs.push_back(current);
     }
 
@@ -65,7 +65,7 @@ TEST_CASE("Test width invariant") {
 
 TEST_CASE("Test lots of spaces") {
     
-    std::vector<std::pair<std::string, int>> strLs {};
+    std::vector<std::pair<std::string, TextRender>> strLs {};
 
     srand(std::time(NULL));
 
@@ -75,7 +75,7 @@ TEST_CASE("Test lots of spaces") {
         for(int x = 0; x < ub; ++x) {
             strRnd += ' ';
         }
-        std::pair<std::string, int> current {strRnd, 10};
+        std::pair<std::string, TextRender> current {strRnd, TextRender{10, false}};
         strLs.push_back(current);
     }
 

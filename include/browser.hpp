@@ -1,6 +1,8 @@
 #pragma once
 
+#include <atomic>
 #include <cstddef>
+#include <thread>
 #include <unordered_map>
 #include <vector>
 #include "line.hpp"
@@ -9,8 +11,13 @@
 #include "link.hpp"
 #include "utils.hpp"
 
+const int SITE_CACHE_LIMIT = 10;
+const int THREAD_NUM = 4;
+
 class Browser {
     private:
+        std::vector<std::thread> threads;
+        std::vector<std::atomic<bool>> done;
         std::unordered_map<std::string, int> previousStatusCodes;
         std::vector<Link*> siteHistory;
         int previousIdx = -1;
@@ -19,12 +26,14 @@ class Browser {
         Site* currentSite;
         std::vector<Line*> lines;
         std::vector<std::size_t> links; // these point to line indices
-        void setLinksOfCurrentLines();
+        void tryCacheTargets();
         Site* findInCacheAndPromoteIfRelevant(std::string& urlString);
     public:
         Browser();
+        void setLinksOfCurrentLines();
         ~Browser();
         void goToSite(std::string url, bool addToHistory, bool refresh = false);
+        void setDone(int threadIdx);
         void refresh();
         Site* getCurrentSite();
         Link* getCurrentLink();
@@ -32,7 +41,7 @@ class Browser {
         std::vector<std::pair<std::string, TextRender>> renderSite();
         std::vector<Line*> toLines(Site* site);
         void followLinkNumber(int linkToFollow);
-        std::vector<Link> getLinkLines();
+        std::vector<Link>* getLinkLines();
 
         void justCacheSite(Link link);
         void goBack();
