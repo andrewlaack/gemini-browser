@@ -20,6 +20,7 @@ class Browser {
         std::vector<std::atomic<bool>> done;
         std::unordered_map<std::string, int> previousStatusCodes;
         std::vector<Link*> siteHistory;
+        std::thread openThread;
         int previousIdx = -1;
         Cache* visitedCache;
         Cache* preFetchCache;

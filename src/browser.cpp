@@ -84,7 +84,14 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     std::string urlString = destination->getLinkDestination().to_string();
     std::string scheme  = destination->getLinkDestination().get_scheme();
     if(scheme != "gemini" && scheme != "file" && scheme != "about") { //  TODO: Should  I use about or just a fs file?
-        openUrl(urlString);
+        if(openThread.joinable()) {
+            openThread.join();
+        }
+
+        // this doesn't have to be blocking...
+        // my browser hangs very often so yea.
+        openThread = std::thread(openUrl,  urlString);
+
         delete destination;
         return;
     }
@@ -217,6 +224,10 @@ Browser::~Browser() {
         if (t.joinable()) {
             t.join();
         }
+    }
+
+    if (openThread.joinable()) {
+        openThread.join();
     }
 
     delete visitedCache;
