@@ -1,4 +1,5 @@
 #include "../include/browser.hpp"
+#include <cassert>
 #include <string>
 #include <thread>
 #include <unistd.h>
@@ -10,6 +11,14 @@
 #include <optional>
 #include <utility>
 #include <vector>
+
+
+void Browser::downloadPage() {
+    std::string body = currentSite->getBody();
+    Link* current = getCurrentLink();
+    assert(current != nullptr); // calling download page should always happen from a page...
+    writeStringToFile(body, encodeAsFilename(current->getLinkDestination()));
+}
 
 
 void dispatch(std::vector<Link>* targets, Browser& b, int threadIdx) {

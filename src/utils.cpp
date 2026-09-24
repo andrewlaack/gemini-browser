@@ -7,6 +7,7 @@
 #include "../include/errors.hpp"
 #include "../include/plaintext.hpp"
 #include "../include/preformatted.hpp"
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -15,9 +16,11 @@
 #include <ios>
 #include <iostream>
 #include <linux/limits.h>
+#include <regex>
 #include <sstream>
 #include <string>
 #include <utility>
+#include <filesystem>
 #include <vector>
 #include <spawn.h>
 #include <sys/wait.h>
@@ -199,4 +202,24 @@ std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair
     }
 
     return res;
+}
+
+
+void writeStringToFile(std::string toWrite, std::string filePath) {
+    std::filesystem::path path{filePath};
+    std::ofstream ofs(path);
+    ofs << toWrite;
+}
+std::string encodeAsFilename(uri link) { 
+
+    std::string base = link.to_string();
+    assert(base.find(':') != -1);
+    base = base.substr(base.find(':')+1); // works for file:/// and gemini:///
+
+    while(base.size() > 0 && base[0] == '/') {
+        base = base.substr(1);
+    }
+
+    std::string cleaned = std::regex_replace(base, std::regex("[^[:alnum:]._-]"), "_");
+    return cleaned;
 }

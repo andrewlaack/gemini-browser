@@ -308,15 +308,17 @@ int main(int argc, char** argv) {
         } else if (input == 'G'){
             y = lowestPos(current);
         } else if (input == 0x04){
+            // ctrl+d
             y += LINES / 2;
         } else if (input == 0x15) {
+            // ctrl+u
             y -= LINES / 2;
         } else if (input == 'r' || input == CTRL('r')){
             b.refresh();
         } else if(input == 'f') {
             b.goForward();
-
-
+        } else if(input == 'd') {
+            b.downloadPage();
         } else if(input == 'b') {
             b.goBack();
 

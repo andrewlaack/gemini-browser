@@ -1,0 +1,19 @@
+- Certificate support?
+    - Be able to:
+        - use a certificate
+        - detect cert changes w/ tofu
+- text boxing
+    - Amfora does a nice job adding extra padding to make text look pleasing; perhaps worth adding.
+        - not sure what algo they are using / if it's just constant padding
+- multi-color lines
+    - current object model only supports text + color + bold, but not specifying any of this on the basis of characters
+        - this would be useful for link lines, which look nice to have the asterick colored differently than the text
+- show redirect destination
+    - "do you want to follow redirect to (xyz)?"
+- saving files
+    - footprints mode
+        - download all files to disk for sites you access
+    - should show a message after download works
+    - should make the filename better
+        - lynx just yoinks the final part of the path, it seems
+- way to show where links go
