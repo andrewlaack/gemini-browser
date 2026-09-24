@@ -1,9 +1,7 @@
 #include "../include/quote.hpp"
 #include <ncurses.h>
 
-Quote::Quote(std::string input) {
-    text = input;
-}
+Quote::Quote(std::string input) : text(input) {}
 
 std::string Quote::textToDraw() {
     return text + "\n";

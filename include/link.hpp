@@ -7,10 +7,10 @@
 
 class Link : public Line {
     private:
+        bool invalid = false;
+        int linkNumber = -1;
         uri linkDestination = uri("gemini://example.com");
         std::optional<std::string> linkText;
-        bool invalid;
-        int linkNumber;
         uri parseDestination(std::string destination, std::optional<uri> prior);
     public:
         Link(std::string text, std::optional<uri> prior = std::nullopt, int linkNumber = -1);

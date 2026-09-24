@@ -1,9 +1,7 @@
 #include "../include/preformatted.hpp"
 #include <ncurses.h>
 
-Preformatted::Preformatted(std::string input) {
-    text = input;
-}
+Preformatted::Preformatted(std::string input) : text(input) {}
 
 std::string Preformatted::textToDraw() {
     return text + "\n";

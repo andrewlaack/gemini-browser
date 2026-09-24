@@ -18,8 +18,6 @@
 // bc ppl use lots of emojis on gemini sites.
 
 void removeNonAscii(std::vector<std::pair<std::string, TextRender>>& strLs) {
-
-
     for(std::size_t i = 0; i < strLs.size(); ++i) {
 
         std::string& s = strLs[i].first;
@@ -273,7 +271,13 @@ int main(int argc, char** argv) {
     if(argc > 1) {
         // TODO: This should have tests.
         std::string path = "file:///" + std::filesystem::current_path().string() + "/" + argv[1];
-        b.goToSite(path,true);
+
+        if(std::filesystem::exists(path)) {
+            b.goToSite(path,true);
+        }  else {
+            b.goToSite(std::string {"gemini://"} + argv[1], true);
+        }
+
     } else {
         b.goToSite("gemini://tlgs.one",true);
     }

@@ -1,5 +1,4 @@
 #include "../include/link.hpp"
-#include <iostream>
 #include <optional>
 #include <string>
 #include "../include/utils.hpp"

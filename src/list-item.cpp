@@ -1,8 +1,6 @@
 #include "../include/list-item.hpp"
 
-ListItem::ListItem(std::string input) {
-    text = input;
-}
+ListItem::ListItem(std::string input)  : text(input) {}
 
 std::string ListItem::textToDraw() {
     return text + "\n";

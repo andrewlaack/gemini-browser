@@ -2,10 +2,7 @@
 #include <algorithm>
 #include <string>
 
-Site::Site(std::string header, std::string body) {
-    this->body = body;
-    this->header = header;
-}
+Site::Site(std::string h, std::string b) : body(b), header(h) {}
 
 std::string Site::getHeader() {
     return header;

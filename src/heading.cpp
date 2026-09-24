@@ -2,9 +2,8 @@
 #include "../include/errors.hpp"
 #include <ncurses.h>
 
-Heading::Heading(std::string text) {
+Heading::Heading(std::string text) : actualText(text) {
 
-    actualText = text;
     // TODO: Actually handle whitespace correctly here.
     if(text.substr(0,3) == "###") {
         headingLevel = 3;
