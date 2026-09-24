@@ -155,7 +155,12 @@ std::string getNewTab() {
 // WIDTH IS INCLUSIVE
 std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair<std::string, TextRender>>& strLs, int width) {
 
+
     std::vector<std::pair<std::string, TextRender>> res {};
+
+    if(width <= 0) {
+        return res;
+    }
 
     for(std::size_t i = 0;  i < strLs.size(); ++i) {
 

@@ -274,9 +274,9 @@ int main(int argc, char** argv) {
 
     if(argc > 1) {
         // TODO: This should have tests.
-        std::string path = "file:///" + std::filesystem::current_path().string() + "/" + argv[1];
 
-        if(std::filesystem::exists(path)) {
+        if(std::filesystem::exists(argv[1])) {
+            std::string path = "file:///" + std::filesystem::current_path().string() + "/" + argv[1];
             b.goToSite(path,true);
         }  else {
             b.goToSite(std::string {"gemini://"} + argv[1], true);
