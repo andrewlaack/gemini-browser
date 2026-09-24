@@ -7,8 +7,13 @@
 #include <filesystem>
 #include <ncurses.h>
 #include <string>
+#include <unctrl.h>
 #include <utility>
 #include <vector>
+
+#ifndef CTRL
+#define CTRL(c) ((c) & 037)
+#endif
 
 
 const std::string DEFAULT_SEARCH_ENGINE="gemini://tlgs.one/search?";
@@ -292,7 +297,7 @@ int main(int argc, char** argv) {
     int y = 0;
 
     // this is the main loop.
-
+    //
     while( input != 'q') {
         if(input == KEY_DOWN) {
             y += 1;
@@ -306,7 +311,7 @@ int main(int argc, char** argv) {
             y += LINES / 2;
         } else if (input == 0x15) {
             y -= LINES / 2;
-        } else if (input == 'r'){
+        } else if (input == 'r' || input == CTRL('r')){
             b.refresh();
         } else if(input == 'f') {
             b.goForward();

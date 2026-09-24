@@ -148,6 +148,7 @@ std::string getNewTab() {
         "* b -> back a page\n"
         "* f -> forward a page\n"
         "* o -> show url entry / link selection\n"
+        "* (r | C-r) -> refresh page\n"
         ;
     return st;
 }

@@ -2,7 +2,8 @@ build:
 	g++ -g src/main.cpp src/quote.cpp src/list-item.cpp src/preformatted.cpp src/format-switch.cpp src/cache.cpp src/link.cpp  src/plaintext.cpp src/site.cpp src/utils.cpp src/gemini-client.cpp src/browser.cpp src/heading.cpp -lssl -lcrypto -lncursesw -o browser.out
 
 install:
-	echo "Not implemented"
+	g++ -Ofast src/main.cpp src/quote.cpp src/list-item.cpp src/preformatted.cpp src/format-switch.cpp src/cache.cpp src/link.cpp  src/plaintext.cpp src/site.cpp src/utils.cpp src/gemini-client.cpp src/browser.cpp src/heading.cpp -lssl -lcrypto -lncursesw -o browser.out
+	cp browser.out /usr/local/bin/gem-browser
 
 clean:
 	echo "Not implemented"
