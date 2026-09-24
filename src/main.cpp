@@ -1,4 +1,5 @@
 #include "../include/browser.hpp"
+#include <iostream>
 #include <malloc.h>
 #include "../include/utils.hpp"
 #include <algorithm>
@@ -8,6 +9,9 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+
+const std::string DEFAULT_SEARCH_ENGINE="gemini://tlgs.one/search?";
 
 // we do this because this is built against ncurses, would be nice to do away w/ this
 // bc ppl use lots of emojis on gemini sites.
@@ -92,7 +96,13 @@ void draw(DrawState ds) {
     move(0,(COLS / 2) - (ds.header.size() / 2) );
 
     attron(A_BOLD);
-    addstr(ds.header.c_str());
+
+    if(ds.header.size() < COLS) {
+        addstr(ds.header.c_str());
+    }  else {
+        addstr((ds.header.substr(0,COLS-3) + "...").c_str());
+    }
+
     attroff(A_BOLD);
 
     for(int i = ds.y;i-ds.y+1 < LINES && i < ds.strLs.size(); ++i) {
@@ -316,7 +326,11 @@ int main(int argc, char** argv) {
             } catch (...) {
                 if(locationToGo != "") {
                     if(locationToGo.find(":") == -1) { // TODO: Is this how we which scheme was specified?
-                        locationToGo = "gemini://" + locationToGo;
+                        if(locationToGo.find('.') != -1 && urlEncode(locationToGo) == locationToGo) { // hmm, this feels weak. Like I can't search something if I add a period?
+                            locationToGo = "gemini://" + locationToGo;
+                        } else {
+                            locationToGo = DEFAULT_SEARCH_ENGINE + urlEncode(locationToGo);
+                        }
                     }
                     b.goToSite(locationToGo, true);
                 }
@@ -345,9 +359,9 @@ int main(int argc, char** argv) {
         removeNonAscii(current);
         current = breakLines(current,COLS);
 
-
         y = std::max(0,y);
         y = std::max(0,std::min(y,lowestPos(current)));
+
         ds.y = y;
         ds.strLs = current;
         auto* clk = b.getCurrentLink();
