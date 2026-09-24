@@ -1,16 +1,11 @@
 #include "../include/browser.hpp"
 #include <malloc.h>
-#include "../include/gemini-client.hpp"
 #include "../include/utils.hpp"
 #include <algorithm>
-#include <atomic>
-#include <cmath>
 #include <cstddef>
 #include <filesystem>
-#include <iostream>
 #include <ncurses.h>
 #include <string>
-#include <thread>
 #include <utility>
 #include <vector>
 
@@ -90,7 +85,6 @@ void drawInputBox(std::string text, std::string userInput) {
     addstr(userTextToRender.c_str());
 
 }
-
 
 void draw(DrawState ds) {
 
@@ -282,10 +276,7 @@ int main(int argc, char** argv) {
         b.goToSite("gemini://tlgs.one",true);
     }
 
-    auto current = b.renderSite();
-    removeNonAscii(current);
-    current = breakLines(current,COLS);
-
+    std::vector<std::pair<std::string, TextRender>> current;
 
     int input = 0;
     int y = 0;
@@ -310,17 +301,9 @@ int main(int argc, char** argv) {
         } else if(input == 'f') {
             b.goForward();
 
-            current = b.renderSite();
-            removeNonAscii(current);
-            current = breakLines(current,COLS);
-
 
         } else if(input == 'b') {
             b.goBack();
-
-            current = b.renderSite();
-            removeNonAscii(current);
-            current = breakLines(current,COLS);
 
         } else if(input == 'o') {
             std::string locationToGo = openPageHandler(ds);
@@ -345,14 +328,8 @@ int main(int argc, char** argv) {
             std::string inputQuery = handleUserInput(ds);
             if(inputQuery != "?") { // TODO: Better handling
                 b.goToSite(inputQuery,true);
-                current = b.renderSite();
-                removeNonAscii(current);
-                current = breakLines(current,COLS);
             } else {
                 b.goBack();
-                current = b.renderSite();
-                removeNonAscii(current);
-                current = breakLines(current,COLS);
             }
 
         } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39){
@@ -362,15 +339,12 @@ int main(int argc, char** argv) {
             } else {
                 b.goToSite(b.getCurrentSite()->getMeta(),true);
             }
-            current = b.renderSite();
-            removeNonAscii(current);
-            current = breakLines(current,COLS);
-
-        } else {
-            current = b.renderSite();
-            removeNonAscii(current);
-            current = breakLines(current,COLS);
         }
+
+        current = b.renderSite();
+        removeNonAscii(current);
+        current = breakLines(current,COLS);
+
 
         y = std::max(0,y);
         y = std::max(0,std::min(y,lowestPos(current)));
