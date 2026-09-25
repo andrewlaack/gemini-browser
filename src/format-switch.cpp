@@ -4,7 +4,7 @@
 FormatSwitch::FormatSwitch(std::string input) : text(input) {}
 
 std::string FormatSwitch::textToDraw() {
-    return text + "\n";
+    return "";
 }
 
 int FormatSwitch::getColor() {

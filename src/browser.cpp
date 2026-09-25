@@ -260,8 +260,14 @@ Site* Browser::getCurrentSite() {
 std::vector<std::pair<std::string, TextRender>> Browser::renderSite() {
     std::vector<std::pair<std::string, TextRender>> res{};
     for(auto* line: lines) {
-        std::pair<std::string,TextRender> cp {line->textToDraw(), TextRender {line->getColor(), line->isBold()}};
-        res.push_back(cp);
+        // TODO: Don't special case this; define an interface.
+        if(line->type() == PREFORMATTED) {
+            std::pair<std::string,TextRender> cp {line->textToDraw(), TextRender {line->getColor(), line->isBold(), false}};
+            res.push_back(cp);
+        } else {
+            std::pair<std::string,TextRender> cp {line->textToDraw(), TextRender {line->getColor(), line->isBold()}};
+            res.push_back(cp);
+        }
     }
     return res;
 }

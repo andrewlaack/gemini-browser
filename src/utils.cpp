@@ -184,6 +184,13 @@ std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair
     for(std::size_t i = 0;  i < strLs.size(); ++i) {
 
         std::string cstr = strLs[i].first;
+
+        if(!strLs[i].second.shouldFold) {
+            cstr = cstr.substr(0,cols - leftPadAmount); // otherwise there's some funkiness at the end due to how ncurses renders stuff.
+            res.push_back(std::pair<std::string,TextRender> {leftPadStr + cstr, strLs[i].second});
+            continue;
+        }
+
         std::string current = "";
         int lastSpace = -1;
 

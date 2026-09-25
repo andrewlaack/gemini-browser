@@ -10,6 +10,7 @@ const int COLOR_LINK = 159;
 struct TextRender {
     int color;
     bool isBold;
+    bool shouldFold = true; // preformatted text doesn't need to be folded.
 };
 
 bool isPrefixed(std::string input, std::string prefix);
