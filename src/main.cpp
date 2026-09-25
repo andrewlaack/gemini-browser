@@ -1,6 +1,4 @@
 #include "../include/browser.hpp"
-#include <iostream>
-#include <malloc.h>
 #include "../include/utils.hpp"
 #include <algorithm>
 #include <cstddef>
@@ -97,7 +95,7 @@ void drawInputBox(std::string text, std::string userInput) {
 
 void draw(DrawState ds) {
 
-    clear();
+    erase();
     move(0,(COLS / 2) - (ds.header.size() / 2) );
 
     attron(A_BOLD);
