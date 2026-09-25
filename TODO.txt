@@ -14,3 +14,14 @@
     - should make the filename better
         - lynx just yoinks the final part of the path, it seems
 - way to show where links go
+- text search
+- character encoding options
+- don't line break on preformatted text... 
+- should reset y value when switching between some tabs
+    - persistent memory sometimes though. 
+        - perhaps on the basis of a page? sort of wonder about that though; like should this be stored in browser and then perhaps
+            - returned when queried for to do rendering? prat of a site? probably not that, not totally sure though. 
+                - should be able to highlight arbitrary text / jump to a position on command
+                    - what would the abstraction look like for that? 
+                        - This would likely take as an input a line text and output a pair with start / stop chars for selection
+                            - iff delta p_1 - p_0 > 0 then highlight this line. 

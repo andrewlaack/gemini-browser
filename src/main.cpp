@@ -52,6 +52,7 @@ struct DrawState {
     std::string redirInput;
     std::string openOtherInput;
     std::string userInput;
+    std::string metaLine;
 };
 
 void drawInputBox(std::string text, std::string userInput) {
@@ -128,7 +129,7 @@ void draw(DrawState ds) {
     }
 
     if (ds.handleRedirect) {
-        drawInputBox("Follow redirect (y/n): ", ds.redirInput);
+        drawInputBox("Redirect to " + ds.metaLine + " (y/n): ", ds.redirInput);
     }
 
     if(ds.handleInput) {
@@ -360,6 +361,12 @@ int main(int argc, char** argv) {
             }
 
         } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39){
+            
+            auto* st = b.getCurrentSite();
+            if(st != nullptr) {
+                ds.metaLine = st->getMeta();
+            }
+
             Direction dir = handleRedir(ds);
             if(dir == BACKWARD) {
                 b.goBack();
@@ -384,6 +391,11 @@ int main(int argc, char** argv) {
             ds.header = clk->getLinkDestination().to_string();
         } else {
             ds.header = "Welcome!";
+        }
+
+        auto* st = b.getCurrentSite();
+        if(st != nullptr) {
+            ds.metaLine = st->getMeta();
         }
 
         draw(ds);
