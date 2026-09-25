@@ -194,7 +194,12 @@ void draw(DrawState& ds) {
     }
 
     if(ds.handleInput) {
-        drawInputBox("Input: ", ds.userInput);
+        if(ds.metaLine != "") {
+            drawInputBox(ds.metaLine + ": ", ds.userInput);
+        } else {
+            drawInputBox("Input: ", ds.userInput);
+
+        }
     }
 
     if (ds.handleOpenOther) {
@@ -413,6 +418,11 @@ int main(int argc, char** argv) {
         }
 
         if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
+            auto* st = b.getCurrentSite();
+            if(st != nullptr) {
+                ds.metaLine = st->getMeta();
+            }
+
             std::string inputQuery = handleUserInput(ds);
             if(inputQuery != "?") { // TODO: Better handling
                 b.goToSite(inputQuery,true);

@@ -34,4 +34,3 @@
 - horizontal scroll when lines are too long?
 - make unordered list items indent correctly
     - first line is normal, subsequent lines should have 2 spaces prefixing them
-- show prompt for inputs from metaline.
