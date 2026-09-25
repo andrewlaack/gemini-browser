@@ -2,9 +2,6 @@
     - Be able to:
         - use a certificate
         - detect cert changes w/ tofu
-- text boxing
-    - Amfora does a nice job adding extra padding to make text look pleasing; perhaps worth adding.
-        - not sure what algo they are using / if it's just constant padding
 - multi-color lines
     - current object model only supports text + color + bold, but not specifying any of this on the basis of characters
         - this would be useful for link lines, which look nice to have the asterick colored differently than the text

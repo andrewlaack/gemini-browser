@@ -20,7 +20,7 @@ Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount, boo
 std::string urlEncode(const std::string& value);
 std::string getNewTab();
 void openUrl(const std::string& url);
-std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair<std::string, TextRender>>& strLs, int width);
+std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair<std::string, TextRender>>& strLs, int width, int cols);
 
 // This will over-write the existing file, if relevant. This will not create directories for you.
 void writeStringToFile(std::string toWrite, std::string filePath);

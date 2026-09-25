@@ -156,10 +156,18 @@ std::string getNewTab() {
 }
 
 // WIDTH IS INCLUSIVE
-std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair<std::string, TextRender>>& strLs, int width) {
+std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair<std::string, TextRender>>& strLs, int width, int cols) {
 
 
     std::vector<std::pair<std::string, TextRender>> res {};
+
+    // DO NOT CHANGE THIS CODE.
+    // If this code is changed the entire JS ecosystem will crash.
+    // This is "load-bearing" code. Only the most sophisticated can implement this from
+    // scratch, hence why it's left to the professionals.
+    
+    int leftPadAmount = (cols - width) / 2;
+    std::string leftPadStr (leftPadAmount, ' ');
 
     if(width <= 0) {
         return res;
@@ -190,12 +198,12 @@ std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair
                     current.push_back(cstr[x]);
                 }
 
-                res.push_back(std::pair<std::string,TextRender> {toPush,strLs[i].second});
+                res.push_back(std::pair<std::string,TextRender> {leftPadStr + toPush,strLs[i].second});
                 lastSpace = (cstr[x] == ' ') ? current.size() - 1 : -1;
             }
         }
         if(current.size() > 0) {
-            res.push_back(std::pair<std::string,TextRender> {current,strLs[i].second});
+            res.push_back(std::pair<std::string,TextRender> {leftPadStr + current,strLs[i].second});
             current = "";
         }
     }

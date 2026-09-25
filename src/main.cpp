@@ -13,6 +13,7 @@
 #define CTRL(c) ((c) & 037)
 #endif
 
+const int maxWidth = 80;
 
 const std::string DEFAULT_SEARCH_ENGINE="gemini://tlgs.one/search?";
 
@@ -108,8 +109,10 @@ void draw(DrawState ds) {
 
     attroff(A_BOLD);
 
+    addstr(std::string(COLS, ' ').c_str());
+
     for(int i = ds.y;i-ds.y+1 < LINES && i < ds.strLs.size(); ++i) {
-        move(i - ds.y + 1, 0);
+        move(i - ds.y + 2, 0);
 
         attron(COLOR_PAIR(ds.strLs[i].second.color + 1));
         if(ds.strLs[i].second.isBold) {
@@ -141,7 +144,7 @@ void draw(DrawState ds) {
 }
 
 int lowestPos(std::vector<std::pair<std::string, TextRender>>& strLs) {
-    return strLs.size() - LINES;
+    return (strLs.size() - LINES) + 3;
 }
 
 std::string openPageHandler(DrawState ds) {
@@ -362,7 +365,9 @@ int main(int argc, char** argv) {
 
         current = b.renderSite();
         removeNonAscii(current);
-        current = breakLines(current,COLS);
+
+        // we pass in current, our target row width to wrap, and the total screen width so we can center the text.
+        current = breakLines(current,std::min(COLS, maxWidth), COLS);
 
         y = std::max(0,y);
         y = std::max(0,std::min(y,lowestPos(current)));
