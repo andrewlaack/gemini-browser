@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstddef>
 #include <filesystem>
+#include <iostream>
 #include <ncurses.h>
 #include <string>
 #include <unctrl.h>
@@ -450,7 +451,6 @@ int main(int argc, char** argv) {
 
         draw(ds);
         refresh();
-
 
 
         input = getch();

@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iostream>
 #include <stdexcept>
 #include <sys/socket.h>
@@ -11,7 +12,7 @@
 #include <string>
 #include <poll.h>
 
-Site* GeminiClient::getNetworkedSite(Link link) {
+Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string keyPath) {
 
     std::string host = link.getLinkDestination().get_host();
     std::string req  = link.getLinkDestination().to_string() + "\r\n";
@@ -22,6 +23,17 @@ Site* GeminiClient::getNetworkedSite(Link link) {
     }
 
     SSL_CTX* ctx = SSL_CTX_new(TLS_client_method());
+
+
+    if(crtPath != "" && keyPath != "") {
+        if (SSL_CTX_use_certificate_file(ctx, crtPath.c_str(), SSL_FILETYPE_PEM) <= 0 ||
+            SSL_CTX_use_PrivateKey_file(ctx, keyPath.c_str(), SSL_FILETYPE_PEM) <= 0 ||
+            !SSL_CTX_check_private_key(ctx)) {
+            SSL_CTX_free(ctx);
+            return nullptr;
+        }
+    }
+
     BIO* bio = BIO_new_ssl_connect(ctx);
 
     SSL* ssl;
@@ -87,13 +99,13 @@ Site* GeminiClient::getNetworkedSite(Link link) {
 }
 
 
-Site* GeminiClient::fetchSite(Link link) {
+Site* GeminiClient::fetchSite(Link link, std::string crtPath, std::string keyPath) {
     std::string destination = link.getLinkDestination().to_string();
 
     // TODO: Actually handle uris
     if(isPrefixed(destination, "gemini://")) {
         try {
-            return getNetworkedSite(link);
+            return getNetworkedSite(link, crtPath, keyPath);
         } catch (...) {
             auto* unreach = new Site{"", ""};
             unreach->setUnreachable();

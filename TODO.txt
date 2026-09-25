@@ -11,7 +11,6 @@
 - way to show where links go
 - text search
 - character encoding options
-- don't line break on preformatted text... 
 - should reset y value when switching between some tabs
     - persistent memory sometimes though. 
         - perhaps on the basis of a page? sort of wonder about that though; like should this be stored in browser and then perhaps
@@ -33,3 +32,6 @@
 - different color lines
     - would be nice for link lines to vary depending on if they've been visited in history
 - horizontal scroll when lines are too long?
+- make unordered list items indent correctly
+    - first line is normal, subsequent lines should have 2 spaces prefixing them
+- show prompt for inputs from metaline.

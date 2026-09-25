@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <vector>
 #include "line.hpp"
+#include "identity-manager.hpp"
 #include "site.hpp"
 #include "cache.hpp"
 #include "link.hpp"
@@ -16,6 +17,7 @@ const int THREAD_NUM = 4;
 
 class Browser {
     private:
+        IdentityManager identityManager = IdentityManager{""};
         std::vector<std::thread> threads;
         std::vector<std::atomic<bool>> done;
         std::unordered_map<std::string, int> previousStatusCodes;

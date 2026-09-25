@@ -6,6 +6,7 @@
 #include "../include/site.hpp"
 #include "../include/gemini-client.hpp"
 #include "../include/utils.hpp"
+#include "../include/identity-manager.hpp"
 #include <cstddef>
 #include <cstdlib>
 #include <optional>
@@ -113,7 +114,8 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     }
     
     if(site == nullptr) {
-        site = client.fetchSite(*destination);
+        Identity id = identityManager.getIdentityForURI(destination->getLinkDestination());
+        site = client.fetchSite(*destination, id.crtPath, id.keyPath);
     }
 
     if(site == nullptr || site->getUnreachable()) {
@@ -216,7 +218,7 @@ std::vector<Line*> Browser::toLines(Site* site) {
 }
 
 
-Browser::Browser() : threads(THREAD_NUM), done(THREAD_NUM) {
+Browser::Browser() : threads(THREAD_NUM), done(THREAD_NUM){
     currentSite = nullptr;
     visitedCache = new Cache{};
     preFetchCache = new Cache{};
