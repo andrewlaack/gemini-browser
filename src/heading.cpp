@@ -31,7 +31,7 @@ int Heading::getColor() {
         case 2:
             return COLOR_GREEN;
         case 1:
-            return COLOR_BLUE;
+            return COLOR_RED;
         default:
             throw NotImplemented();
     }
