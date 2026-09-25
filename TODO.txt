@@ -2,9 +2,6 @@
     - Be able to:
         - use a certificate
         - detect cert changes w/ tofu
-- multi-color lines
-    - current object model only supports text + color + bold, but not specifying any of this on the basis of characters
-        - this would be useful for link lines, which look nice to have the asterick colored differently than the text
 - saving files
     - footprints mode
         - download all files to disk for sites you access
@@ -23,3 +20,15 @@
                     - what would the abstraction look like for that? 
                         - This would likely take as an input a line text and output a pair with start / stop chars for selection
                             - iff delta p_1 - p_0 > 0 then highlight this line. 
+
+---
+
+- multi-color lines
+    - decided against this because 1) this slows it down 2) this adds complexity 3) I don't like the look that much
+        - it looks a bit too busy (imo). 
+
+---
+
+- add site history.
+- different color lines
+    - would be nice for link lines to vary depending on if they've been visited in history

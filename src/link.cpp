@@ -87,14 +87,14 @@ std::optional<std::string> Link::getLinkText() {
 
 std::string Link::textToDraw() {
     if(linkText != std::nullopt) {
-        return "[" + std::to_string(linkNumber) + "] - " + linkText.value() + "\n";
+        return "[" + std::to_string(linkNumber) + "] " + linkText.value() + "\n";
 
     }
-    return "[" + std::to_string(linkNumber) + "] - " + linkDestination.to_string() + "\n";
+    return "[" + std::to_string(linkNumber) + "] " + linkDestination.to_string() + "\n";
 }
 
 int Link::getColor() {
-    return COLOR_RED;
+    return COLOR_LINK;
 }
 
 LineType Link::type() {

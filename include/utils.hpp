@@ -5,6 +5,7 @@
 #include "line.hpp"
 #include "../vendor/uri.hpp"
 
+const int COLOR_LINK = 112;
 
 struct TextRender {
     int color;

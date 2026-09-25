@@ -55,8 +55,12 @@ void removeNonAscii(std::vector<std::pair<std::string, TextRender>>& strLs) {
 
 
 void initColors() {
-    for (int c = 0; c < COLORS; ++c) {
-        init_pair(c + 1, c, -1);
+    if(has_colors()) {
+        start_color();
+        use_default_colors();
+        for (int c = 0; c < COLORS && c+1 < COLOR_PAIRS; ++c) {
+            init_pair(c + 1, c, -1);
+        }
     }
 }
 struct DrawState {
@@ -329,9 +333,6 @@ int main(int argc, char** argv) {
     curs_set(0); // hide cursor
 	keypad(stdscr,TRUE);
 
-    // TODO: Check colors available first
-    start_color();
-    use_default_colors();
     initColors();
 
     b.goToSite("about:newtab",true);
