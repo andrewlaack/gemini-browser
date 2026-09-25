@@ -9,7 +9,6 @@
 #include "../include/preformatted.hpp"
 #include <cassert>
 #include <cstddef>
-#include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <iomanip>
@@ -23,15 +22,24 @@
 #include <vector>
 #include <spawn.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 extern char** environ;
 
 void openUrl(const std::string& url) {
+
+    posix_spawn_file_actions_t fa;
+    posix_spawn_file_actions_init(&fa);
+    // we don't want the stdout mucking up our terminal.
+    posix_spawn_file_actions_addopen(&fa, 1, "/dev/null", O_WRONLY, 0);
+    posix_spawn_file_actions_adddup2(&fa, 1, 2);
+
     pid_t pid;
     char* argv[] = {(char*)"xdg-open", (char*)url.c_str(), nullptr};
-    if (posix_spawnp(&pid, "xdg-open", nullptr, nullptr, argv, environ) == 0) {
+    if (posix_spawnp(&pid, "xdg-open", &fa, nullptr, argv, environ) == 0) {
         waitpid(pid, nullptr, 0);
     }
+    posix_spawn_file_actions_destroy(&fa);
 }
 
 bool isPrefixed(std::string input, std::string prefix) {
