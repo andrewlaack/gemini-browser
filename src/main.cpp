@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <cwctype>
 #include <filesystem>
 #include <ncurses.h>
 #include <string>
@@ -362,11 +361,9 @@ int main(int argc, char** argv) {
             ds.y = 0;
         } else if (input == 'G'){
             ds.toLowest = true;
-        } else if (input == 0x04){
-            // ctrl+d
+        } else if (input == CTRL('d')){
             ds.y += LINES / 2;
-        } else if (input == 0x15) {
-            // ctrl+u
+        } else if (input == CTRL('u')) {
             ds.y -= LINES / 2;
         } else if (input == 'r' || input == CTRL('r')){
             b.refresh();
