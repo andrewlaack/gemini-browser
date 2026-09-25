@@ -188,6 +188,12 @@ std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair
         int lastSpace = -1;
 
         for(int x = 0; x < cstr.size(); ++x) {
+            if(cstr[x] == '\n') {
+                res.push_back(std::pair<std::string,TextRender> {leftPadStr + current, strLs[i].second});
+                current = "";
+                lastSpace = -1;
+                continue;
+            }
             if(current.size() < width) {
                 current.push_back(cstr[x]);
                 if(cstr[x] == ' ') {

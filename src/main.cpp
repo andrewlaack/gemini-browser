@@ -17,7 +17,7 @@
 
 
 int lowestPos(std::vector<std::pair<std::string, TextRender>>& strLs) {
-    return (strLs.size() - (LINES - 2));
+    return (strLs.size() - (LINES - 2)) + 1; // this gives us two new lines at the end because the last line should contain a \n.
 }
 
 const int maxWidth = 80;
@@ -42,7 +42,7 @@ void removeNonAscii(std::vector<std::pair<std::string, TextRender>>& strLs) {
 
         std::string out;
         for (int c: s)
-            if (c >= 0x20 && c <= 0x7E) {
+            if (c >= 0x20 && c <= 0x7E || c == '\n') {
                 out += c;
             } else if (c == '\t') {
                 out += "    "; // \t is a larger character and fucks with breaklines.
