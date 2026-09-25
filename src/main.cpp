@@ -1,7 +1,9 @@
 #include "../include/browser.hpp"
 #include "../include/utils.hpp"
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
+#include <cwctype>
 #include <filesystem>
 #include <ncurses.h>
 #include <string>
@@ -13,9 +15,22 @@
 #define CTRL(c) ((c) & 037)
 #endif
 
+
+int lowestPos(std::vector<std::pair<std::string, TextRender>>& strLs) {
+    return (strLs.size() - (LINES - 2));
+}
+
 const int maxWidth = 80;
 
 const std::string DEFAULT_SEARCH_ENGINE="gemini://tlgs.one/search?";
+
+
+bool isValidUserInput(int uinput) {
+    if ((uinput >= 0x20 && uinput <= 0x7E)) {
+        return true;
+    }
+    return false;
+}
 
 // we do this because this is built against ncurses, would be nice to do away w/ this
 // bc ppl use lots of emojis on gemini sites.
@@ -27,9 +42,12 @@ void removeNonAscii(std::vector<std::pair<std::string, TextRender>>& strLs) {
 
         std::string out;
         for (int c: s)
-            if ((c >= 0x20 && c < 0x7E) || (c == '\t' || c == '\n')) {
+            if (c >= 0x20 && c <= 0x7E) {
                 out += c;
+            } else if (c == '\t') {
+                out += "    "; // \t is a larger character and fucks with breaklines.
             }
+
         strLs[i].first = out;
     }
     return;
@@ -43,9 +61,9 @@ void initColors() {
     }
 }
 struct DrawState {
+    Browser* bPtr;
     std::string header;
     int y;
-    std::vector<std::pair<std::string, TextRender>> strLs;
     bool handleInput;
     bool handleOpenOther;
     bool handleRedirect;
@@ -53,6 +71,7 @@ struct DrawState {
     std::string openOtherInput;
     std::string userInput;
     std::string metaLine;
+    bool toLowest = false;
 };
 
 void drawInputBox(std::string text, std::string userInput) {
@@ -70,14 +89,20 @@ void drawInputBox(std::string text, std::string userInput) {
     }
     attroff(COLOR_PAIR(COLOR_CYAN+1));
 
-    int textSize = text.size();
     int userInputSize = userInput.size();
     int width = COLS/2;
+
+    if(text.size() >= width) {
+        text = text.substr(0,width-6) + "...: ";
+    }
+
+    int textSize = text.size();
+
+    assert(textSize < width);
 
     std::string userTextToRender = userInput;
 
     int delta = width - (textSize + userInputSize);
-
 
     if(delta < 0) {
         userTextToRender = userInput.substr(delta*-1, userInput.size());
@@ -88,14 +113,37 @@ void drawInputBox(std::string text, std::string userInput) {
         }
     }
 
-
     move(LINES/2, COLS/4);
     addstr(text.c_str());
     addstr(userTextToRender.c_str());
 
 }
 
-void draw(DrawState ds) {
+void draw(DrawState& ds) {
+
+    if(COLS < 20) {
+        erase();
+        addstr("Screen width too small.");
+        return;
+    }
+    if(LINES < 3) {
+        erase();
+        addstr("Screen height too small.");
+        return;
+    }
+
+
+    auto current = ds.bPtr->renderSite();
+    removeNonAscii(current);
+    current = breakLines(current,std::min(COLS, maxWidth), COLS);
+
+    if(ds.toLowest) {
+        ds.y = lowestPos(current);
+        ds.toLowest = false;
+    }
+
+
+    ds.y = std::max(0,std::min(ds.y,lowestPos(current)));
 
     erase();
     move(0,(COLS / 2) - (ds.header.size() / 2) );
@@ -112,28 +160,28 @@ void draw(DrawState ds) {
 
     addstr(std::string(COLS, ' ').c_str());
 
-    for(int i = ds.y;i-ds.y+1 < LINES && i < ds.strLs.size(); ++i) {
+    for(int i = ds.y; i - ds.y < LINES - 2 && i < current.size(); ++i) {
         move(i - ds.y + 2, 0);
 
-        attron(COLOR_PAIR(ds.strLs[i].second.color + 1));
-        if(ds.strLs[i].second.isBold) {
+        attron(COLOR_PAIR(current[i].second.color + 1));
+        if(current[i].second.isBold) {
             attron(A_BOLD);
-            addstr(ds.strLs[i].first.c_str());
+            addstr(current[i].first.c_str());
             attroff(A_BOLD);
         }
         else {
-            addstr(ds.strLs[i].first.c_str());
+            addstr(current[i].first.c_str());
         }
-        attroff(COLOR_PAIR(ds.strLs[i].second.color + 1));
-
+        attroff(COLOR_PAIR(current[i].second.color + 1));
     }
 
     if (ds.handleRedirect) {
-        drawInputBox("Redirect to " + ds.metaLine + " (y/n): ", ds.redirInput);
+        std::string toShow = "(y/n) Redirect to " + ds.metaLine + ": ";
+        drawInputBox(toShow, ds.redirInput);
     }
 
     if(ds.handleInput) {
-        drawInputBox("input: ", ds.userInput);
+        drawInputBox("Input: ", ds.userInput);
     }
 
     if (ds.handleOpenOther) {
@@ -142,10 +190,6 @@ void draw(DrawState ds) {
 
     refresh();
 
-}
-
-int lowestPos(std::vector<std::pair<std::string, TextRender>>& strLs) {
-    return (strLs.size() - LINES) + 3;
 }
 
 std::string openPageHandler(DrawState ds) {
@@ -175,7 +219,9 @@ std::string openPageHandler(DrawState ds) {
             break;
         }
 
-        acc += std::string {(char)sel};
+        if(isValidUserInput(sel)) {
+            acc += std::string {(char)sel};
+        }
 
         ds.openOtherInput = acc;
         draw(ds);
@@ -216,6 +262,7 @@ Direction handleRedir(DrawState ds) {
             ds.handleRedirect = false;
             return BACKWARD;
         }
+        draw(ds);
     }
 }
 
@@ -245,8 +292,9 @@ std::string handleUserInput(DrawState ds) {
             continue;
         }
 
-
-        acc += std::string {(char)sel};
+        if(isValidUserInput(sel)) {
+            acc += std::string {(char)sel};
+        }
         ds.userInput = acc;
         draw(ds);
     }
@@ -264,6 +312,7 @@ int main(int argc, char** argv) {
     Browser& b = *bPtr;
 
     DrawState ds {};
+    ds.bPtr = bPtr;
 
     initscr();
     set_escdelay(25);
@@ -298,36 +347,37 @@ int main(int argc, char** argv) {
         b.goToSite("gemini://tlgs.one",true);
     }
 
-    std::vector<std::pair<std::string, TextRender>> current;
 
     int input = 0;
-    int y = 0;
 
     // this is the main loop.
     //
     while( input != 'q') {
+
         if(input == KEY_DOWN) {
-            y += 1;
+            ds.y += 1;
         } else if (input == KEY_UP){
-            y -= 1;
+            ds.y -= 1;
         } else if (input == 'g'){
-            y = 0;
+            ds.y = 0;
         } else if (input == 'G'){
-            y = lowestPos(current);
+            ds.toLowest = true;
         } else if (input == 0x04){
             // ctrl+d
-            y += LINES / 2;
+            ds.y += LINES / 2;
         } else if (input == 0x15) {
             // ctrl+u
-            y -= LINES / 2;
+            ds.y -= LINES / 2;
         } else if (input == 'r' || input == CTRL('r')){
             b.refresh();
         } else if(input == 'f') {
             b.goForward();
+            ds.y = 0; // todo: make this part of state somewhere.
         } else if(input == 'd') {
             b.downloadPage();
         } else if(input == 'b') {
             b.goBack();
+            ds.y = 0; // todo: make this part of state somewhere.
 
         } else if(input == 'o') {
             std::string locationToGo = openPageHandler(ds);
@@ -347,6 +397,8 @@ int main(int argc, char** argv) {
                         }
                     }
                     b.goToSite(locationToGo, true);
+                    ds.y = 0; // todo: make this part of state somewhere.
+
                 }
             }
 
@@ -356,6 +408,7 @@ int main(int argc, char** argv) {
             std::string inputQuery = handleUserInput(ds);
             if(inputQuery != "?") { // TODO: Better handling
                 b.goToSite(inputQuery,true);
+                ds.y = 0; // todo: make this part of state somewhere.
             } else {
                 b.goBack();
             }
@@ -372,20 +425,10 @@ int main(int argc, char** argv) {
                 b.goBack();
             } else {
                 b.goToSite(b.getCurrentSite()->getMeta(),true);
+                ds.y = 0; // todo: make this part of state somewhere.
             }
         }
 
-        current = b.renderSite();
-        removeNonAscii(current);
-
-        // we pass in current, our target row width to wrap, and the total screen width so we can center the text.
-        current = breakLines(current,std::min(COLS, maxWidth), COLS);
-
-        y = std::max(0,y);
-        y = std::max(0,std::min(y,lowestPos(current)));
-
-        ds.y = y;
-        ds.strLs = current;
         auto* clk = b.getCurrentLink();
         if(clk != nullptr) {
             ds.header = clk->getLinkDestination().to_string();

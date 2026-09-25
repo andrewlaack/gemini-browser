@@ -164,8 +164,8 @@ std::string getNewTab() {
 }
 
 // WIDTH IS INCLUSIVE
+// WE ASSUME NO WIDER CHARS (E.G. replace tabs with spaces.)
 std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair<std::string, TextRender>>& strLs, int width, int cols) {
-
 
     std::vector<std::pair<std::string, TextRender>> res {};
 
