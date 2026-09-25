@@ -15,7 +15,7 @@ TEST_CASE("Test trivial line breaking") {
         std::pair<std::string, TextRender> current {"this is a simple test line", TextRender{10,false}};
         strLs.push_back(current);
     }
-    auto result = breakLines(strLs, 10);
+    auto result = breakLines(strLs, 10,80);
     REQUIRE(result.size() ==  30);
 }
 
@@ -37,7 +37,7 @@ TEST_CASE("Test width invariant") {
         strLs.push_back(current);
     }
 
-    auto result = breakLines(strLs, 80);
+    auto result = breakLines(strLs, 80,80);
 
     for(auto& res: result) {
         REQUIRE(res.first.size() <= 80);
@@ -61,7 +61,7 @@ TEST_CASE("Test lots of spaces") {
         strLs.push_back(current);
     }
 
-    auto result = breakLines(strLs, 80);
+    auto result = breakLines(strLs, 80,80);
 
     for(auto& res: result) {
         REQUIRE(res.first.size() <= 80);
