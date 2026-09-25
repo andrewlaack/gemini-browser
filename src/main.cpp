@@ -60,6 +60,7 @@ void initColors() {
     }
 }
 struct DrawState {
+    std::vector<std::pair<std::string, TextRender>> prior;
     Browser* bPtr;
     std::string header;
     int y;
@@ -131,10 +132,18 @@ void draw(DrawState& ds) {
         return;
     }
 
+    auto& current = ds.prior;
+    auto* cs = ds.bPtr->getCurrentSite();
 
-    auto current = ds.bPtr->renderSite();
-    removeNonAscii(current);
-    current = breakLines(current,std::min(COLS, maxWidth), COLS);
+    if(cs != nullptr && (cs->getStatusCode() < 20 || cs->getStatusCode() > 29)) {
+        current = ds.prior;
+
+    } else {
+        current = ds.bPtr->renderSite();
+        removeNonAscii(current);
+        current = breakLines(current,std::min(COLS, maxWidth), COLS);
+        ds.prior = current;
+    }
 
     if(ds.toLowest) {
         ds.y = lowestPos(current);
