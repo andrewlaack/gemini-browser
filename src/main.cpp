@@ -189,7 +189,7 @@ void draw(DrawState& ds) {
     }
 
     if (ds.handleRedirect) {
-        std::string toShow = "Redirect to " + ds.metaLine + " (y/n): ";
+        std::string toShow = "Redirect to \"" + ds.metaLine + "\" (y/n): ";
         drawInputBox(toShow, ds.redirInput);
     }
 
