@@ -1,4 +1,5 @@
 #include "../include/preformatted.hpp"
+#include "../include/utils.hpp"
 #include <ncurses.h>
 
 Preformatted::Preformatted(std::string input) : text(input) {}
@@ -8,7 +9,7 @@ std::string Preformatted::textToDraw() {
 }
 
 int Preformatted::getColor() {
-    return COLOR_MAGENTA;
+    return COLOR_PREFORMATTED;
 }
 
 LineType Preformatted::type() {

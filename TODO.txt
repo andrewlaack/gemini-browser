@@ -32,3 +32,4 @@
 - add site history.
 - different color lines
     - would be nice for link lines to vary depending on if they've been visited in history
+- horizontal scroll when lines are too long?
