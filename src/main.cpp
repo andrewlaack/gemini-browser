@@ -285,7 +285,12 @@ int main(int argc, char** argv) {
             std::string path = "file:///" + std::filesystem::current_path().string() + "/" + argv[1];
             b.goToSite(path,true);
         }  else {
-            b.goToSite(std::string {"gemini://"} + argv[1], true);
+            std::string inputString = argv[1];
+            if(inputString.find("gemini://") == 0) {
+                b.goToSite(argv[1], true);
+            } else {
+                b.goToSite(std::string {"gemini://"} + argv[1], true);
+            }
         }
 
     } else {

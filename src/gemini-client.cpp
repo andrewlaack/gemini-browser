@@ -4,10 +4,12 @@
 #include <sys/time.h>
 #include "../include/gemini-client.hpp"
 #include "../include/site.hpp"
+#include <chrono>
 #include "../include/utils.hpp"
 #include "../include/errors.hpp"
 #include <openssl/ssl.h>
 #include <string>
+#include <poll.h>
 
 Site* GeminiClient::getNetworkedSite(Link link) {
 
@@ -26,17 +28,30 @@ Site* GeminiClient::getNetworkedSite(Link link) {
     BIO_get_ssl(bio, &ssl);
     SSL_set_tlsext_host_name(ssl, host.c_str());
     BIO_set_conn_hostname(bio, conn.c_str());
+    BIO_set_nbio(bio, 1);
 
-    if (BIO_do_connect(bio) <= 0) {
-        BIO_free_all(bio);
-        SSL_CTX_free(ctx);
-        return nullptr;
+    auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+
+    while (BIO_do_connect(bio) <= 0) {
+
+        int fd = -1;
+
+        long ms = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - std::chrono::steady_clock::now()).count();
+        pollfd p{};
+
+        // yikes.
+        if (!BIO_should_retry(bio) || BIO_get_fd(bio, &fd) < 0 || fd < 0 || ms <= 0 || (p = {fd, short(BIO_should_read(bio) ? POLLIN : POLLOUT), 0}, poll(&p, 1, int(ms)) <= 0)) {
+            BIO_free_all(bio);
+            SSL_CTX_free(ctx);
+            return nullptr;
+        }
     }
 
-    // timeout, 10 seconds
+    // timeout, 5 seconds
     int fd = -1;
     if (BIO_get_fd(bio, &fd) >= 0 && fd >= 0) {
-        timeval tv{10, 0};
+        BIO_socket_nbio(fd, 0);
+        timeval tv{5, 0};
         setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
         setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof tv);
     }
