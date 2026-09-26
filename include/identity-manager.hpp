@@ -10,10 +10,6 @@ struct Identity {
 };
 
 class IdentityManager {
-    private:
-        // We want to search based on path first then domain.
-        std::unordered_map<std::string, Identity> lookup;
     public:
-        IdentityManager(std::string configurationPath);
         Identity getIdentityForURI(uri destination);
 };

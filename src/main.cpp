@@ -325,7 +325,6 @@ std::string handleUserInput(DrawState ds) {
 
 int main(int argc, char** argv) {
 
-
     Browser* bPtr = new Browser{};
     Browser& b = *bPtr;
 

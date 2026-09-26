@@ -17,7 +17,7 @@ const int THREAD_NUM = 4;
 
 class Browser {
     private:
-        IdentityManager identityManager = IdentityManager{""};
+        IdentityManager identityManager = IdentityManager{};
         std::vector<std::thread> threads;
         std::vector<std::atomic<bool>> done;
         std::unordered_map<std::string, int> previousStatusCodes;

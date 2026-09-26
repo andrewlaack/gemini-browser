@@ -1,16 +1,32 @@
+#include <algorithm>
+#include <cstdlib>
+#include <filesystem>
+#include <iostream>
+#include <stdexcept>
 #include <string>
-#include <unordered_map>
+#include <unistd.h>
 #include "../vendor/uri.hpp"
 #include "../include/identity-manager.hpp"
-
-IdentityManager::IdentityManager(std::string configurationPath) {
-    // TODO: Implement this.
-    // lookup["bbs.geminispace.org"] = Identity{"/home/andrew/client.key", "/home/andrew/client.crt"};
-}
+#include "../include/utils.hpp"
 
 Identity IdentityManager::getIdentityForURI(uri destination) {
-    // TODO: Implement this. 
-    return Identity{"",""};
+
+    if(destination.get_scheme() != "gemini") {
+        return Identity{"", ""};
+    }
+
+    namespace fs = std::filesystem;
+    fs::path certDir = fs::path(getHome()) / ".gb";
+    std::string host = destination.get_host();
+    std::string name = host;
+    if (destination.get_port() && destination.get_port() != 1965) {
+        name += ":" + std::to_string(destination.get_port());
+    }
+    fs::path dir = certDir / name;
+
+    if (fs::exists(dir / "client.crt") && fs::exists(dir / "client.key")) {
+        return Identity{(dir / "client.key").string(), (dir / "client.crt").string()};
+    }
+
+    return Identity{"", ""};
 }
-
-

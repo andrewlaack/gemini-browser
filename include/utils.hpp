@@ -1,5 +1,6 @@
 #pragma once
 #include <optional>
+#include <filesystem>
 #include <string>
 #include <vector>
 #include "line.hpp"
@@ -28,3 +29,4 @@ std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair
 // This will over-write the existing file, if relevant. This will not create directories for you.
 void writeStringToFile(std::string toWrite, std::string filePath);
 std::string encodeAsFilename(uri link);
+std::filesystem::path getHome();

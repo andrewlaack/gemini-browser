@@ -251,3 +251,18 @@ std::string encodeAsFilename(uri link) {
     std::string cleaned = std::regex_replace(base, std::regex("[^[:alnum:]._-]"), "_");
     return cleaned;
 }
+
+std::filesystem::path getHome()
+{
+    std::string home = std::getenv("HOME");
+    if (home == "") {
+        throw std::runtime_error{"$HOME not set."};
+    }
+    if(!std::filesystem::exists(home)) {
+        throw std::runtime_error{"$HOME directory doesn't exist..."};
+    }
+
+    return home;
+}
+
+
