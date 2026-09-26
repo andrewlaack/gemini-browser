@@ -45,3 +45,5 @@
             - two things here:
                 - we shouldn't prefetch for cert requests / domains
                 - we shouldn't use prefetched when we add a cert where we didn't have one before.
+
+- ability to go left / right in input box.

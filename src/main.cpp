@@ -416,33 +416,36 @@ int main(int argc, char** argv) {
 
         }
 
-        if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
-            auto* st = b.getCurrentSite();
-            if(st != nullptr) {
-                ds.metaLine = st->getMeta();
-            }
+        // this is the loop where we deal with redirects and stuff like that. 
+        while(b.getCurrentSite()->getStatusCode() < 20 || b.getCurrentSite()->getStatusCode() > 29) {
+            if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
+                auto* st = b.getCurrentSite();
+                if(st != nullptr) {
+                    ds.metaLine = st->getMeta();
+                }
 
-            std::string inputQuery = handleUserInput(ds);
-            if(inputQuery != "?") { // TODO: Better handling
-                b.goToSite(inputQuery,true);
-                ds.y = 0; // todo: make this part of state somewhere.
-            } else {
-                b.goBack();
-            }
+                std::string inputQuery = handleUserInput(ds);
+                if(inputQuery != "?") { // TODO: Better handling
+                    b.goToSite(inputQuery,true);
+                    ds.y = 0; // todo: make this part of state somewhere.
+                } else {
+                    b.goBack();
+                }
 
-        } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39){
-            
-            auto* st = b.getCurrentSite();
-            if(st != nullptr) {
-                ds.metaLine = st->getMeta();
-            }
+            } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39){
+                
+                auto* st = b.getCurrentSite();
+                if(st != nullptr) {
+                    ds.metaLine = st->getMeta();
+                }
 
-            Direction dir = handleRedir(ds);
-            if(dir == BACKWARD) {
-                b.goBack();
-            } else {
-                b.goToSite(b.getCurrentSite()->getMeta(),true);
-                ds.y = 0; // todo: make this part of state somewhere.
+                Direction dir = handleRedir(ds);
+                if(dir == BACKWARD) {
+                    b.goBack();
+                } else {
+                    b.goToSite(b.getCurrentSite()->getMeta(),true);
+                    ds.y = 0; // todo: make this part of state somewhere.
+                }
             }
         }
 

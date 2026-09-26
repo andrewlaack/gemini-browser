@@ -37,6 +37,8 @@ Example:
         ├── client.crt
         └── client.key
 
+(I recommend symlinking ~/.gb to somewhere you backup regularly)
+
 NOTE: You must have $HOME set in your shell.
 
 Example command to generate keys:
