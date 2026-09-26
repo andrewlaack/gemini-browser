@@ -46,7 +46,7 @@ class Browser {
         std::vector<Line*> toLines(Site* site);
         void followLinkNumber(int linkToFollow);
         std::vector<Link>* getLinkLines();
-
+        Identity getIdentity(uri uriInput);
         void justCacheSite(Link link);
         void goBack();
         void goForward();

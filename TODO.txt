@@ -1,7 +1,3 @@
-- Certificate support?
-    - Be able to:
-        - use a certificate
-        - detect cert changes w/ tofu
 - saving files
     - footprints mode
         - download all files to disk for sites you access
@@ -34,3 +30,18 @@
 - horizontal scroll when lines are too long?
 - make unordered list items indent correctly
     - first line is normal, subsequent lines should have 2 spaces prefixing them
+
+---
+
+- Certificate support
+    - Be able to:
+        x use a certificate (done)
+        - detect cert changes w/ tofu
+        - notify users about certificate requests (6x messages)
+            - in these cases we should just inform users of such things.
+        - handle caching
+            - prefetching should be disabled when passing certs
+                - this should be configured on the basis of a domain then
+            - two things here:
+                - we shouldn't prefetch for cert requests / domains
+                - we shouldn't use prefetched when we add a cert where we didn't have one before.

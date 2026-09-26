@@ -26,6 +26,11 @@ void dispatch(std::vector<Link>* targets, Browser& b, int threadIdx) {
     std::vector<Link>& refT = *targets;
     for(int i =  0 ; i < refT.size() && i < SITE_CACHE_LIMIT; ++i) {
         auto& target = refT[i];
+
+        auto id = b.getIdentity(target.getLinkDestination());
+        if(id.crtPath != "" || id.keyPath != "") {
+            continue; // don't try to prefetch for domains we normally pass a cert to.
+        }
         b.justCacheSite(target);
     }
     b.setDone(threadIdx);
@@ -109,12 +114,16 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
 
     Site* site = nullptr;
 
+
+
+
+    Identity id = identityManager.getIdentityForURI(destination->getLinkDestination());
+
     if(urlString.find("gemini://") != -1 && !refresh) {
         site = findInCacheAndPromoteIfRelevant(urlString);
     }
     
     if(site == nullptr) {
-        Identity id = identityManager.getIdentityForURI(destination->getLinkDestination());
         site = client.fetchSite(*destination, id.crtPath, id.keyPath);
     }
 
@@ -160,6 +169,11 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
 
     tryCacheTargets();
 }
+
+Identity Browser::getIdentity(uri uriInput) {
+    return this->identityManager.getIdentityForURI(uriInput);
+}
+
 
 void Browser::justCacheSite(Link link) {
     auto client = GeminiClient{};
