@@ -4,8 +4,7 @@ A gemini browser, written in C++.
 
 Requirements
 ============
-C++ compiler, make, openssl
-
+C++ compiler, make, openssl, ncurses
 
 Installation
 ============
@@ -20,3 +19,44 @@ TBD
 Examples
 ========
 TBD
+
+Identities
+=========
+These are specified in:
+    $HOME/.gb/{hostname}/client.crt
+    $HOME/.gb/{hostname}/client.key
+
+Or for a non-standard port (port != 1965):
+    $HOME/.gb/{hostname}:{port}/client.crt
+    $HOME/.gb/{hostname}:{port}/client.key
+
+Example:
+    > tree .gb
+    .gb
+    └── bbs.geminispace.org
+        ├── client.crt
+        └── client.key
+
+NOTE: You must have $HOME set in your shell.
+
+Example command to generate keys:
+    openssl req -x509 -newkey rsa:2048 -nodes -days 3650   -keyout client.key -out client.crt -subj "/CN=yourname"
+
+Caching
+=======
+All caching is done in memory with a configurable fifo data structure to limit cached page count. 
+There are two seperate instances of the cache object at any given time. One for prefetching and one for history.
+Pages fetched with an identity are never cached, and prefetching never sends requests to hosts you'd use an identity for.
+
+    Prefetch caching:
+
+    One of the main reasons this browser feels so much faster than other gemini protocol browsers is because of its optional prefetch caching. 
+    This is enabled by default. When you visit a site without an identity, a thread will be created that fetches the first 10 links on the page.
+    This enables ~ instantaneous visitation of those links. Prefetch caching is only enabled when you aren't using an identity for a domain.
+
+    History caching:
+
+    When you visit a page, the page will be cached after it's loaded. 
+    If the page was in the prefetch cache before, it will be upgraded to the history cache. 
+    This is because visited pages are more important than prefetched ones. 
+    History caching is disabled when using an identity.
